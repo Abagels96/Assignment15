@@ -39,5 +39,10 @@ public class SelfCareViewController {
     public String progress() {
         return "progress";
     }
+    
+    @GetMapping("/login")
+    public String login() {
+    	return "login";
+    }
 }
 
