@@ -45,7 +45,7 @@
                 <button onclick="recordActivity('SLEEP')"
                     class="flex flex-col items-center justify-center p-4 bg-indigo-500 hover:bg-indigo-600 text-white font-semibold rounded-xl transition transform hover:scale-[1.02] active:scale-[0.98] shadow-lg">
                     <span class="text-3xl mb-1">🛌</span>
-                    <span class="text-sm md:text-base">Sleep</span>
+                    <span class="text-m md:text-base">Sleep</span>
                 </button>
                 <!-- Shower Button -->
                 <button onclick="recordActivity('SHOWER')"
@@ -53,6 +53,17 @@
                     <span class="text-3xl mb-1">🚿</span>
                     <span class="text-sm md:text-base">Shower</span>
                 </button>
+            </section>
+
+            <!-- Sleep Quality Selector -->
+            <section id="sleep-quality-section" class="mb-6">
+                <label for="sleep-quality" class="block text-sm text-gray-600">Sleep Quality</label>
+                <select id="sleep-quality" class="mt-1 p-2 border rounded w-full">
+                    <option value="POOR">Poor</option>
+                    <option value="FAIR">Fair</option>
+                    <option value="GOOD" selected>Good</option>
+                    <option value="EXCELLENT">Excellent</option>
+                </select>
             </section>
 
             <!-- History Display -->

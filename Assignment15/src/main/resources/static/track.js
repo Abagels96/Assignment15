@@ -61,13 +61,20 @@ async function loadHistory() {
 }
 
 async function recordActivity(activityType) {
+    const isSleep = activityType === 'SLEEP';
+    const quality = isSleep ? document.getElementById('sleep-quality')?.value : undefined;
+
     const newActivity = {
         type: activityType,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        ...(isSleep && { startDateTime: new Date().toISOString() }),
+        ...(isSleep && { endDateTime: new Date().toISOString() }),
+        ...(isSleep && { quality })
     };
 
     try {
-        const response = await fetch(`${API_BASE_URL}/record`, {
+        const url = isSleep ? `${API_BASE_URL}/record/sleep` : `${API_BASE_URL}/record`;
+        const response = await fetch(url, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(newActivity)
