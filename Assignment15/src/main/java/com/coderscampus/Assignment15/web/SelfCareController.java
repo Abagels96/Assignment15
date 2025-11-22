@@ -46,10 +46,11 @@ public class SelfCareController {
     public ResponseEntity<Activity> recordActivity(@RequestBody Map<String, Object> activityData) {
         String type = (String) activityData.get("type");
         Activity activity = null;
-        
+        System.out.println("sleep has been recorded");
         // Create the appropriate subclass based on type
         if ("SLEEP".equals(type)) {
             activity = objectMapper.convertValue(activityData, Sleep.class);
+            
         } else if ("EAT".equals(type)) {
             activity = objectMapper.convertValue(activityData, Eat.class);
         } else if ("SHOWER".equals(type)) {
@@ -80,10 +81,7 @@ public class SelfCareController {
         }
         
         // Ensure timestamp is set on the server-side if not provided
-        if (sleep.getTimestamp() == null) {
-            sleep.setTimestamp(Instant.now());
-        }
-
+       
         Sleep savedSleep = (Sleep) selfCareService.saveActivity(sleep);
         return new ResponseEntity<>(savedSleep, HttpStatus.CREATED);
     }

@@ -13,7 +13,7 @@ public class Task {
 private Timing frequency;
 @Id
 @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer taskId; 
+    private Long taskId; 
     public String getName() {
         return name;
     }
@@ -26,11 +26,11 @@ private Timing frequency;
 		this.isCompleted = isCompleted;
 	}
 
-	public Integer getTaskId() {
+	public Long getTaskId() {
 		return taskId;
 	}
 
-	public void setTaskId(Integer taskId) {
+	public void setTaskId(Long taskId) {
 		this.taskId = taskId;
 	}
 
