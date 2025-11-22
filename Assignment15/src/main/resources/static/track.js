@@ -7,7 +7,6 @@ const type= document.getElementById("action-buttons")
 
 // --- Helper Functions ---
 function getActivityColor(type) {
-	console.log("here I am");
     switch (type) {
 		
         case 'EAT': return 'bg-green-100 text-green-800 border-green-300';
@@ -61,8 +60,8 @@ function renderHistory(activities) {
         // For sleep activities, prefer startDateTime if available, otherwise use timestamp
         // For other activities, use timestamp
         let timeToDisplay = activity.timestamp;
-		const endTimeToDisplay=null;
-		const quality=null;
+		let endTimeToDisplay=null;
+		let quality=null;
         if (activity.type === 'SLEEP') {
             // Convert LocalDateTime string to ISO format for formatting
             timeToDisplay = activity.startDateTime;
@@ -72,7 +71,7 @@ function renderHistory(activities) {
 			quality= activity.quality;
 			console.log(quality);
 			
-			
+			// get validation for the endTimeToDisplay and quality to makes sure they are not null
 			
 			
         }
@@ -80,8 +79,7 @@ function renderHistory(activities) {
         item.className = `flex justify-between items-center p-3 border rounded-lg ${colorClass}`;
         item.innerHTML = `
             <span class="font-medium capitalize text-lg flex-shrink-0">${activity.type.toLowerCase()}</span>
-            <span class="text-sm whitespace-nowrap ml-4 flex-shrink-0">${formatTimestamp(timeToDisplay)}</span>
-            <span class="text-sm whitespace-nowrap ml-4 flex-shrink-0">${formatTimestamp(endTimeToDisplay)}</span>
+            <span class="text-sm whitespace-nowrap ml-4 flex-shrink-0">${formatTimestamp(timeToDisplay)+" - "+formatTimestamp(endTimeToDisplay)}</span>
             <span class="text-sm whitespace-nowrap ml-4 flex-shrink-0">${(quality)}</span>
         `;
         list.appendChild(item);
@@ -195,7 +193,7 @@ async function submitSleep() {
         console.error('Sleep form elements not found');
         return;
     }
-    
+    //this looks terrible Kevin would lose his mind lets write a function for this 
     const date = dateInput.value;
     const time = timeInput.value;
     const quality = qualitySelect.value;
