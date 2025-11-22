@@ -1,10 +1,5 @@
 package com.coderscampus.Assignment15.domain;
 
-
-	import java.math.BigInteger;
-
-	
-
 	import jakarta.persistence.Entity;
 	import jakarta.persistence.GeneratedValue;
 	import jakarta.persistence.GenerationType;
@@ -17,17 +12,18 @@ public class User {
 		
 		@Id
 	    @GeneratedValue(strategy = GenerationType.IDENTITY)
-	private BigInteger userId;
+	private Long userId;
+		
 	private String username;
 
 
 	private String password;
-		  public BigInteger getUserId() {
+		  public Long getUserId() {
 			return userId;
 		}
 
 
-		public void setUserId(BigInteger userId) {
+		public void setUserId(Long userId) {
 			this.userId = userId;
 		}
 

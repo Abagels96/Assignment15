@@ -2,7 +2,11 @@ package com.coderscampus.Assignment15.web;
 
 import com.coderscampus.Assignment15.dto.SummaryDTO;
 import com.coderscampus.Assignment15.domain.Activity;
+import com.coderscampus.Assignment15.domain.Sleep;
+import com.coderscampus.Assignment15.domain.Eat;
+import com.coderscampus.Assignment15.domain.Shower;
 import com.coderscampus.Assignment15.service.SelfCareService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,22 +36,56 @@ public class SelfCareController {
         this.selfCareService = selfCareService;
     }
 
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
     /**
-     * Endpoint: POST /api/v1/selfcare/record
+     * Endpoint: POST /selfcare/record
      * Used by the frontend to record a new activity (Eat, Sleep, Shower).
      */
     @PostMapping("/record")
-    public ResponseEntity<Activity> recordActivity(@RequestBody Activity activity) {
-        if (activity.getType() == null) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    public ResponseEntity<Activity> recordActivity(@RequestBody Map<String, Object> activityData) {
+        String type = (String) activityData.get("type");
+        Activity activity = null;
+        System.out.println("sleep has been recorded");
+        // Create the appropriate subclass based on type
+        if ("SLEEP".equals(type)) {
+            activity = objectMapper.convertValue(activityData, Sleep.class);
+            
+        } else if ("EAT".equals(type)) {
+            activity = objectMapper.convertValue(activityData, Eat.class);
+        } else if ("SHOWER".equals(type)) {
+            activity = objectMapper.convertValue(activityData, Shower.class);
+        } else {
+            // Fallback to base Activity if type is unknown
+            activity = objectMapper.convertValue(activityData, Activity.class);
         }
+        
         // Ensure timestamp is set on the server-side if not provided
         if (activity.getTimestamp() == null) {
              activity.setTimestamp(Instant.now());
         }
+
         Activity savedActivity = selfCareService.saveActivity(activity);
         return new ResponseEntity<>(savedActivity, HttpStatus.CREATED);
     }
+
+    /**
+     * Endpoint: POST /selfcare/record/sleep
+     * Used by the frontend to record a sleep activity with quality.
+     */
+    @PostMapping("/record/sleep")
+    public ResponseEntity<Sleep> recordSleep(@RequestBody Sleep sleep) {
+        // Validate sleep quality - Jackson will reject invalid enum values during deserialization
+        if (sleep.getQuality() == null) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        
+        // Ensure timestamp is set on the server-side if not provided
+       
+        Sleep savedSleep = (Sleep) selfCareService.saveActivity(sleep);
+        return new ResponseEntity<>(savedSleep, HttpStatus.CREATED);
+    }
+     
 
     /**
      * Endpoint: GET /api/v1/selfcare/history
