@@ -2,12 +2,16 @@ package com.coderscampus.Assignment15.domain;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.DiscriminatorValue;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.EnumType;
 
 @Entity
 @DiscriminatorValue("SHOWER")
 public class Shower extends Activity {
 	
 	private Integer lengthInMinutes;
+	
+	@Enumerated(EnumType.STRING)
 	private Rating rating;
 	
 	public Integer getLengthInMinutes() {

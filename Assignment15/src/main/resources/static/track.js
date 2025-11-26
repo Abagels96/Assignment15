@@ -62,26 +62,79 @@ function renderHistory(activities) {
         let timeToDisplay = activity.timestamp;
 		let endTimeToDisplay=null;
 		let quality=null;
+		let rating=null;
+		let lengthInMinutes=null;
         if (activity.type === 'SLEEP') {
             // Convert LocalDateTime string to ISO format for formatting
             timeToDisplay = activity.startDateTime;
-			console.log(timeToDisplay);
 			endTimeToDisplay= activity.endDateTime;
-			console.log(endTimeToDisplay);
 			quality= activity.quality;
-			console.log(quality);
 			
 			// get validation for the endTimeToDisplay and quality to makes sure they are not null
 			
 			
+        } else if (activity.type === 'SHOWER') {
+            timeToDisplay = activity.timestamp;
+            rating = activity.rating;
+            lengthInMinutes = activity.lengthInMinutes;
+        } else if (activity.type === 'EAT') {
+            timeToDisplay = activity.timestamp;
         }
 
-        item.className = `flex justify-between items-center p-3 border rounded-lg ${colorClass}`;
-        item.innerHTML = `
-            <span class="font-medium capitalize text-lg flex-shrink-0">${activity.type.toLowerCase()}</span>
-            <span class="text-sm whitespace-nowrap ml-4 flex-shrink-0">${formatTimestamp(timeToDisplay)+" - "+formatTimestamp(endTimeToDisplay)}</span>
-            <span class="text-sm whitespace-nowrap ml-4 flex-shrink-0">${(quality)}</span>
-        `;
+        // Build the display content based on activity type
+        let displayContent = '';
+        let clickableClass = '';
+        
+        if (activity.type === 'SLEEP') {
+            displayContent = `
+                <div class="flex items-center flex-1 min-w-0">
+                    <span class="font-medium capitalize text-lg flex-shrink-0">${activity.type.toLowerCase()} <button onclick="event.stopPropagation(); deleteSleepActivity(${activity.id || 'null'})" class="ml-4 flex-shrink-0 text-red-600 hover:text-red-800 hover:bg-red-100 px-3 py-1.5 rounded-md transition font-medium text-base" title="Delete sleep instance">
+                    ×
+                </button></span>
+                    <span class="text-sm whitespace-nowrap ml-4 flex-shrink-0">${formatTimestamp(timeToDisplay)}${endTimeToDisplay ? " - " + formatTimestamp(endTimeToDisplay) : ""}</span>
+                    <span class="text-sm whitespace-nowrap ml-4 flex-shrink-0">${quality || ''}</span>
+                </div>
+                
+            `;
+        } else if (activity.type === 'SHOWER') {
+            // Convert rating enum to number for display
+            let ratingDisplay = 'N/A';
+            if (rating) {
+                ratingDisplay = rating === 'ONE' ? '1' : 
+                               rating === 'TWO' ? '2' : 
+                               rating === 'THREE' ? '3' : 
+                               rating === 'FOUR' ? '4' : 
+                               rating === 'FIVE' ? '5' : rating;
+            }
+            displayContent = `
+                <span class="font-medium capitalize text-lg flex-shrink-0">${activity.type.toLowerCase()}</span>
+                <span class="text-sm whitespace-nowrap ml-4 flex-shrink-0">${formatTimestamp(timeToDisplay)}</span>
+                <span class="text-sm whitespace-nowrap ml-4 flex-shrink-0">Rating: ${ratingDisplay}/5 | Length: ${lengthInMinutes || 'N/A'} min</span>
+            `;
+        } else if (activity.type === 'EAT') {
+            // Make Eat items clickable to show meal description
+            const hasMealDescription = activity.mealDescription && activity.mealDescription.trim();
+            clickableClass = hasMealDescription ? 'cursor-pointer hover:opacity-80' : '';
+            displayContent = `
+                <span class="font-medium capitalize text-lg flex-shrink-0">${activity.type.toLowerCase()}</span>
+                <span class="text-sm whitespace-nowrap ml-4 flex-shrink-0">${formatTimestamp(timeToDisplay)}</span>
+                ${hasMealDescription ? '<span class="text-sm ml-4 flex-shrink-0 text-green-600">Click to view meal</span>' : ''}
+            `;
+            if (hasMealDescription) {
+                item.addEventListener('click', () => {
+                    showMealDescriptionModal(activity.mealDescription);
+                });
+            }
+        } else {
+            displayContent = `
+                <span class="font-medium capitalize text-lg flex-shrink-0">${activity.type.toLowerCase()}</span>
+                <span class="text-sm whitespace-nowrap ml-4 flex-shrink-0">${formatTimestamp(timeToDisplay)}</span>
+            `;
+        }
+        
+        item.className = `flex justify-between items-center p-3 border rounded-lg ${colorClass} ${clickableClass}`;
+        
+        item.innerHTML = displayContent;
         list.appendChild(item);
     });
 }
@@ -124,6 +177,18 @@ async function recordActivity(type) {
 		
        
         showSleepForm();
+        return;
+    }
+    
+    // For shower, show the form instead of immediately recording
+    if (isShower) {
+        showShowerForm();
+        return;
+    }
+    
+    // For eat, show the form instead of immediately recording
+    if (isEat) {
+        showEatForm();
         return;
     }
     
@@ -183,6 +248,58 @@ function hideSleepForm() {
     }
 }
 
+function showShowerForm() {
+    const showerFormSection = document.getElementById('shower-form-section');
+    if (showerFormSection) {
+        showerFormSection.classList.remove('hidden');
+        
+        // Clear previous values
+        const ratingInput = document.getElementById('shower-rating');
+        const lengthInput = document.getElementById('shower-length');
+        
+        if (ratingInput) {
+            ratingInput.value = 'THREE'; // Default to 3
+        }
+        if (lengthInput) {
+            lengthInput.value = '';
+        }
+        
+        // Scroll to form
+        showerFormSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+}
+
+function hideShowerForm() {
+    const showerFormSection = document.getElementById('shower-form-section');
+    if (showerFormSection) {
+        showerFormSection.classList.add('hidden');
+    }
+}
+
+function showEatForm() {
+    const eatFormSection = document.getElementById('eat-form-section');
+    if (eatFormSection) {
+        eatFormSection.classList.remove('hidden');
+        
+        // Clear previous values
+        const mealDescriptionInput = document.getElementById('eat-meal-description');
+        
+        if (mealDescriptionInput) {
+            mealDescriptionInput.value = '';
+        }
+        
+        // Scroll to form
+        eatFormSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+}
+
+function hideEatForm() {
+    const eatFormSection = document.getElementById('eat-form-section');
+    if (eatFormSection) {
+        eatFormSection.classList.add('hidden');
+    }
+}
+
 async function submitSleep() {
     const dateInput = document.getElementById('sleep-start-date');
     const timeInput = document.getElementById('sleep-start-time');
@@ -238,6 +355,104 @@ async function submitSleep() {
     }
 }
 
+async function submitShower() {
+    const ratingSelect = document.getElementById('shower-rating');
+    const lengthInput = document.getElementById('shower-length');
+    
+    if (!ratingSelect || !lengthInput) {
+        console.error('Shower form elements not found');
+        return;
+    }
+    
+    const rating = ratingSelect.value;
+    const lengthInMinutes = parseInt(lengthInput.value);
+    
+    if (!rating) {
+        alert('Please select a rating');
+        return;
+    }
+    
+    if (!lengthInMinutes || lengthInMinutes < 1) {
+        alert('Please enter a valid length in minutes (at least 1 minute)');
+        return;
+    }
+    
+    const showerActivity = {
+        type: 'SHOWER',
+        timestamp: new Date().toISOString(),
+        rating: rating,
+        lengthInMinutes: lengthInMinutes
+    };
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/record/shower`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(showerActivity)
+        });
+
+        if (!response.ok) throw new Error('Failed to save shower activity');
+        
+        
+        // Convert rating enum to number for display
+        const ratingNumber = rating === 'ONE' ? '1' : 
+                            rating === 'TWO' ? '2' : 
+                            rating === 'THREE' ? '3' : 
+                            rating === 'FOUR' ? '4' : 
+                            rating === 'FIVE' ? '5' : rating;
+        
+        // Show success message with rating and length
+        alert(`Shower recorded!\nRating: ${ratingNumber}/5\nLength: ${lengthInMinutes} minutes`);
+        
+        // Hide the form and reload history
+        hideShowerForm();
+        loadHistory();
+
+    } catch (error) {
+        console.error('Network Error:', error);
+        alert('Failed to record shower. Please try again.');
+    }
+}
+
+async function submitEat() {
+    const mealDescriptionInput = document.getElementById('eat-meal-description');
+    
+    if (!mealDescriptionInput) {
+        console.error('Eat form elements not found');
+        return;
+    }
+    
+    const mealDescription = mealDescriptionInput.value.trim();
+    
+    if (!mealDescription) {
+        alert('Please enter a meal description');
+        return;
+    }
+    
+    const eatActivity = {
+        timestamp: new Date().toISOString(),
+        mealDescription: mealDescription
+    };
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/record/eat`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(eatActivity)
+        });
+
+        if (!response.ok) throw new Error('Failed to save eat activity');
+        
+        // Hide the form and reload history
+        hideEatForm();
+        loadHistory();
+
+    } catch (error) {
+        console.error('Network Error:', error);
+        alert('Failed to record meal. Please try again.');
+    }
+}
+
 // --- Tracker Page: Clear History Modal ---
 const modal = document.getElementById('confirm-modal');
 function showClearHistoryModal() {
@@ -259,6 +474,51 @@ async function clearHistoryConfirmed() {
          console.error('Failed to clear history:', error);
          // We don't use alert()
          console.error('Error: Could not clear history.');
+    }
+}
+
+// --- Meal Description Modal ---
+function showMealDescriptionModal(mealDescription) {
+    const modal = document.getElementById('meal-description-modal');
+    const textElement = document.getElementById('meal-description-text');
+    
+    if (modal && textElement) {
+        textElement.textContent = mealDescription || 'No meal description available.';
+        modal.classList.remove('hidden');
+    }
+}
+
+function hideMealDescriptionModal() {
+    const modal = document.getElementById('meal-description-modal');
+    if (modal) {
+        modal.classList.add('hidden');
+    }
+}
+
+// --- Delete Sleep Activity ---
+async function deleteSleepActivity(id) {
+    if (!id) {
+        console.error('Cannot delete: activity ID is missing');
+        alert('Cannot delete this sleep instance: ID is missing.');
+        return;
+    }
+    
+    if (!confirm('Are you sure you want to delete this sleep instance? This action cannot be undone.')) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`${API_BASE_URL}/activity/${id}`, {
+            method: 'DELETE'
+        });
+        
+        if (!response.ok) throw new Error('Failed to delete sleep activity');
+        
+        // Reload history to reflect the deletion
+        loadHistory();
+    } catch (error) {
+        console.error('Failed to delete sleep activity:', error);
+        alert('Failed to delete sleep instance. Please try again.');
     }
 }
 
