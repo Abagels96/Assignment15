@@ -88,13 +88,13 @@ function renderHistory(activities) {
         if (activity.type === 'SLEEP') {
             displayContent = `
                 <div class="flex items-center flex-1 min-w-0">
-                    <span class="font-medium capitalize text-lg flex-shrink-0">${activity.type.toLowerCase()} <button onclick="event.stopPropagation(); deleteSleepActivity(${activity.id || 'null'})" class="ml-4 flex-shrink-0 text-red-600 hover:text-red-800 hover:bg-red-100 px-3 py-1.5 rounded-md transition font-medium text-base" title="Delete sleep instance">
-                    ×
-                </button></span>
+                    <span class="font-medium capitalize text-lg flex-shrink-0">${activity.type.toLowerCase()}</span>
                     <span class="text-sm whitespace-nowrap ml-4 flex-shrink-0">${formatTimestamp(timeToDisplay)}${endTimeToDisplay ? " - " + formatTimestamp(endTimeToDisplay) : ""}</span>
                     <span class="text-sm whitespace-nowrap ml-4 flex-shrink-0">${quality || ''}</span>
                 </div>
-                
+                <button onclick="event.stopPropagation(); deleteActivity(${activity.id || 'null'}, 'sleep')" class="ml-4 flex-shrink-0 text-red-600 hover:text-red-800 hover:bg-red-100 px-3 py-1.5 rounded-md transition font-medium text-base" title="Delete sleep instance">
+                    ×
+                </button>
             `;
         } else if (activity.type === 'SHOWER') {
             // Convert rating enum to number for display
@@ -107,22 +107,35 @@ function renderHistory(activities) {
                                rating === 'FIVE' ? '5' : rating;
             }
             displayContent = `
-                <span class="font-medium capitalize text-lg flex-shrink-0">${activity.type.toLowerCase()}</span>
-                <span class="text-sm whitespace-nowrap ml-4 flex-shrink-0">${formatTimestamp(timeToDisplay)}</span>
-                <span class="text-sm whitespace-nowrap ml-4 flex-shrink-0">Rating: ${ratingDisplay}/5 | Length: ${lengthInMinutes || 'N/A'} min</span>
+                <div class="flex items-center flex-1 min-w-0">
+                    <span class="font-medium capitalize text-lg flex-shrink-0">${activity.type.toLowerCase()}</span>
+                    <span class="text-sm whitespace-nowrap ml-4 flex-shrink-0">${formatTimestamp(timeToDisplay)}</span>
+                    <span class="text-sm whitespace-nowrap ml-4 flex-shrink-0">Rating: ${ratingDisplay}/5 | Length: ${lengthInMinutes || 'N/A'} min </span>					
+                </div>
+				<button onclick="event.stopPropagation(); deleteActivity(${activity.id || 'null'}, 'shower')" class="ml-4 flex-shrink-0 text-red-600 hover:text-red-800 hover:bg-red-100 px-3 py-1.5 rounded-md transition font-medium text-base" title="Delete shower instance">
+									                   ×
+									               </button> 
             `;
         } else if (activity.type === 'EAT') {
             // Make Eat items clickable to show meal description
             const hasMealDescription = activity.mealDescription && activity.mealDescription.trim();
             clickableClass = hasMealDescription ? 'cursor-pointer hover:opacity-80' : '';
             displayContent = `
-                <span class="font-medium capitalize text-lg flex-shrink-0">${activity.type.toLowerCase()}</span>
-                <span class="text-sm whitespace-nowrap ml-4 flex-shrink-0">${formatTimestamp(timeToDisplay)}</span>
-                ${hasMealDescription ? '<span class="text-sm ml-4 flex-shrink-0 text-green-600">Click to view meal</span>' : ''}
+                <div class="flex items-center flex-1 min-w-0">
+                    <span class="font-medium capitalize text-lg flex-shrink-0">${activity.type.toLowerCase()} 			
+				                  </span>
+                    <span class="text-sm whitespace-nowrap ml-4 flex-shrink-0">${formatTimestamp(timeToDisplay)}</span>
+                    ${hasMealDescription ? '<span class="text-sm ml-4 flex-shrink-0 text-green-600">Click to view meal </span>' : ''}
+                </div>
+				<button onclick="event.stopPropagation(); deleteActivity(${activity.id || 'null'}, 'meal')" class="ml-4 flex-shrink-0 text-red-600 hover:text-red-800 hover:bg-red-100 px-3 py-1.5 rounded-md transition font-medium text-base" title="Delete meal instance"> ×
+							               </button>
             `;
             if (hasMealDescription) {
-                item.addEventListener('click', () => {
-                    showMealDescriptionModal(activity.mealDescription);
+                item.addEventListener('click', (e) => {
+                    // Only show modal if the delete button wasn't clicked
+                    if (!e.target.closest('button')) {
+                        showMealDescriptionModal(activity.mealDescription);
+                    }
                 });
             }
         } else {
@@ -495,15 +508,19 @@ function hideMealDescriptionModal() {
     }
 }
 
-// --- Delete Sleep Activity ---
-async function deleteSleepActivity(id) {
+// --- Delete Activity (Generic for all types) ---
+async function deleteActivity(id, activityType) {
     if (!id) {
         console.error('Cannot delete: activity ID is missing');
-        alert('Cannot delete this sleep instance: ID is missing.');
+        alert(`Cannot delete this ${activityType} instance: ID is missing.`);
         return;
     }
     
-    if (!confirm('Are you sure you want to delete this sleep instance? This action cannot be undone.')) {
+    const activityName = activityType === 'sleep' ? 'sleep' : 
+                         activityType === 'shower' ? 'shower' : 
+                         activityType === 'meal' ? 'meal' : 'activity';
+    
+    if (!confirm(`Are you sure you want to delete this ${activityName} instance? This action cannot be undone.`)) {
         return;
     }
     
@@ -512,13 +529,13 @@ async function deleteSleepActivity(id) {
             method: 'DELETE'
         });
         
-        if (!response.ok) throw new Error('Failed to delete sleep activity');
+        if (!response.ok) throw new Error(`Failed to delete ${activityName} activity`);
         
         // Reload history to reflect the deletion
         loadHistory();
     } catch (error) {
-        console.error('Failed to delete sleep activity:', error);
-        alert('Failed to delete sleep instance. Please try again.');
+        console.error(`Failed to delete ${activityName} activity:`, error);
+        alert(`Failed to delete ${activityName} instance. Please try again.`);
     }
 }
 
