@@ -2,9 +2,11 @@ package com.coderscampus.Assignment15.domain;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.DiscriminatorValue;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Entity
 @DiscriminatorValue("EAT")
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Eat extends Activity {
 	
 	

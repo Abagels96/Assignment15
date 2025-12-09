@@ -85,6 +85,72 @@ public class SelfCareController {
         Sleep savedSleep = (Sleep) selfCareService.saveActivity(sleep);
         return new ResponseEntity<>(savedSleep, HttpStatus.CREATED);
     }
+    
+    /**
+     * Endpoint: POST /selfcare/record/shower
+     * Used by the frontend to record a shower activity with rating and length.
+     */
+    @PostMapping("/record/shower")
+    public ResponseEntity<Shower> recordShower(@RequestBody Shower shower) {
+        try {
+            System.out.println("Received shower activity: " + shower);
+            System.out.println("Rating: " + shower.getRating());
+            System.out.println("Length: " + shower.getLengthInMinutes());
+            
+            // Validate shower rating and length
+            if (shower.getRating() == null) {
+                System.out.println("Validation failed: Rating is null");
+                return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            }
+            if (shower.getLengthInMinutes() == null || shower.getLengthInMinutes() < 1) {
+                System.out.println("Validation failed: Length is null or < 1");
+                return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            }
+            
+            // Ensure timestamp is set on the server-side if not provided
+            if (shower.getTimestamp() == null) {
+                shower.setTimestamp(Instant.now());
+            }
+            
+            Shower savedShower = (Shower) selfCareService.saveActivity(shower);
+            System.out.println("Shower saved successfully with ID: " + savedShower.getId());
+            return new ResponseEntity<>(savedShower, HttpStatus.CREATED);
+        } catch (Exception e) {
+            System.err.println("Error saving shower activity: " + e.getMessage());
+            e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+     
+
+
+     
+        @PostMapping("/record/eat")
+        public ResponseEntity<Eat> recordEat(@RequestBody Eat eat) {
+            try {
+                System.out.println("Received eat activity: " + eat);
+                System.out.println("Meal description: " + eat.getMealDescription());
+                
+                // Validate meal description
+                if (eat.getMealDescription() == null || eat.getMealDescription().trim().isEmpty()) {
+                    System.out.println("Validation failed: Meal description is null or empty");
+                    return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+                }
+                
+                // Ensure timestamp is set on the server-side if not provided
+                if (eat.getTimestamp() == null) {
+                    eat.setTimestamp(Instant.now());
+                }
+                
+                Eat savedEat = (Eat) selfCareService.saveActivity(eat);
+                System.out.println("Eat saved successfully with ID: " + savedEat.getId());
+                return new ResponseEntity<>(savedEat, HttpStatus.CREATED);
+            } catch (Exception e) {
+                System.err.println("Error saving eat activity: " + e.getMessage());
+                e.printStackTrace();
+                return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        }
      
 
     /**
@@ -135,6 +201,16 @@ public class SelfCareController {
     public ResponseEntity<Void> clearAllHistory() {
         selfCareService.deleteAllActivities();
         return new ResponseEntity<>(HttpStatus.NO_CONTENT); // 204 No Content is standard for success
+    }
+
+    /**
+     * Endpoint: DELETE /selfcare/activity/{id}
+     * Used by the frontend to delete a single activity by ID.
+     */
+    @DeleteMapping("/activity/{id}")
+    public ResponseEntity<Void> deleteActivity(@PathVariable Long id) {
+        selfCareService.deleteActivityById(id);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }
 
