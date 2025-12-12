@@ -1,6 +1,7 @@
 package com.coderscampus.Assignment15.web;
 
 import com.coderscampus.Assignment15.dto.SummaryDTO;
+import com.coderscampus.Assignment15.dto.AttributeSummaryDTO;
 import com.coderscampus.Assignment15.domain.Activity;
 import com.coderscampus.Assignment15.domain.Sleep;
 import com.coderscampus.Assignment15.domain.Eat;
@@ -211,6 +212,64 @@ public class SelfCareController {
     public ResponseEntity<Void> deleteActivity(@PathVariable Long id) {
         selfCareService.deleteActivityById(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+    
+    /**
+     * Endpoint: GET /selfcare/attributes
+     * Used by the frontend to get attribute-based summaries for specific activity types.
+     * Query params:
+     *   - type: Activity type (SLEEP, EAT, SHOWER)
+     *   - period: Time period (24h, 7d, 30d)
+     */
+    @GetMapping("/attributes")
+    public ResponseEntity<AttributeSummaryDTO> getAttributeSummary(
+            @RequestParam String type,
+            @RequestParam String period) {
+        
+        // Calculate time boundary based on period
+        Instant now = Instant.now();
+        Instant after;
+        
+        switch (period.toLowerCase()) {
+            case "24h":
+                after = now.minus(24, ChronoUnit.HOURS);
+                break;
+            case "7d":
+                after = now.minus(7, ChronoUnit.DAYS);
+                break;
+            case "30d":
+                after = now.minus(30, ChronoUnit.DAYS);
+                break;
+            default:
+                after = now.minus(24, ChronoUnit.HOURS); // Default to 24h
+        }
+        
+        AttributeSummaryDTO result;
+        
+        // Build response based on activity type
+        switch (type.toUpperCase()) {
+            case "SLEEP":
+                Map<String, Long> qualityCounts = selfCareService.getSleepQualityCounts(after);
+                Double avgDuration = selfCareService.getAverageSleepDuration(after);
+                result = new AttributeSummaryDTO(qualityCounts, avgDuration);
+                break;
+                
+            case "EAT":
+                List<AttributeSummaryDTO.MealInfo> meals = selfCareService.getMealDescriptions(after);
+                Long mealCount = (long) meals.size();
+                result = new AttributeSummaryDTO(mealCount, meals);
+                break;
+                
+            case "SHOWER":
+                Double avgLength = selfCareService.getAverageShowerLength(after);
+                result = new AttributeSummaryDTO(avgLength);
+                break;
+                
+            default:
+                return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        
+        return new ResponseEntity<>(result, HttpStatus.OK);
     }
 }
 

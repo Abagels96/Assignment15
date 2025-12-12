@@ -60,7 +60,7 @@ function renderHistory(activities) {
         // For sleep activities, prefer startDateTime if available, otherwise use timestamp
         // For other activities, use timestamp
         let timeToDisplay = activity.timestamp;
-		let endTimeToDisplay=null;
+		let endTimeToDisplay=activity.timestamp;
 		let quality=null;
 		let rating=null;
 		let lengthInMinutes=null;
