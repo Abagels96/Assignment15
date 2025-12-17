@@ -44,5 +44,15 @@ public class SelfCareViewController {
     public String login() {
     	return "login";
     }
+    
+    /**
+     * Serves the timeline page (timeline.html).
+     * 
+     * @return the name of the template to render
+     */
+    @GetMapping("/timeline")
+    public String timeline() {
+        return "timeline";
+    }
 }
 

@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>24-Hour Timeline - Mom's Self-Care Tracker</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Use Inter font -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f4f8fb; /* Light blue background */
+        }
+        
+        /* Timeline styles */
+        .timeline-line {
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: linear-gradient(to bottom, #3b82f6, #10b981, #0ea5e9);
+            transform: translateX(-50%);
+        }
+        
+        .timeline-dot {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            border: 3px solid white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            z-index: 10;
+        }
+        
+        .timeline-item {
+            transition: all 0.3s ease;
+        }
+        
+        .timeline-item:hover {
+            transform: translateY(-2px);
+        }
+        
+        .activity-card {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .activity-card:hover {
+            box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+        }
+        
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            animation: slideUp 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideUp {
+            from { 
+                opacity: 0;
+                transform: translateY(20px); 
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0); 
+            }
+        }
+    </style>
+</head>
+<body class="h-screen flex flex-col items-center p-4 overflow-hidden">
+
+    <div class="w-full bg-white shadow-xl rounded-2xl p-6 md:p-8 my-4 flex flex-col h-[calc(100vh-2rem)]">
+        <!-- Header -->
+        <header class="mb-6 flex-shrink-0">
+            <div class="flex items-center justify-between mb-2">
+                <a href="/track" class="text-3xl hover:scale-110 transition-transform" title="Back to Tracker">
+                    🏠
+                </a>
+                <div class="flex-1">
+                    <h1 class="text-3xl md:text-4xl font-extrabold text-blue-800 text-center">24-Hour Activity Timeline</h1>
+                </div>
+                <a href="/progress" class="text-3xl hover:scale-110 transition-transform" title="View Progress">
+                    📊
+                </a>
+            </div>
+            <p class="text-gray-500 mt-2 text-center">Your self-care activities over the last 24 hours</p>
+        </header>
+
+        <!-- Page Content: Timeline -->
+        <main class="flex-1 overflow-y-auto">
+            <!-- Loading State -->
+            <div id="timeline-loading" class="text-center py-12">
+                <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                <p class="mt-4 text-gray-500">Loading timeline...</p>
+            </div>
+            
+            <!-- Empty State -->
+            <div id="timeline-empty" class="hidden text-center py-12">
+                <div class="text-6xl mb-4">📅</div>
+                <h3 class="text-xl font-bold text-gray-700 mb-2">No Activities Yet</h3>
+                <p class="text-gray-500 mb-6">Record your first activity to see it appear on the timeline!</p>
+                <a href="/track" class="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors">
+                    Go to Tracker
+                </a>
+            </div>
+            
+            <!-- Timeline Container -->
+            <div id="timeline-container" class="hidden relative px-4 md:px-8 py-8">
+                <!-- Timeline will be injected here by JavaScript -->
+            </div>
+        </main>
+    </div>
+
+    <!-- Activity Detail Modal -->
+    <div id="activity-modal" class="modal">
+        <div class="modal-content bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4 relative">
+            <!-- Close button -->
+            <button onclick="closeModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-2xl font-bold">
+                &times;
+            </button>
+            
+            <!-- Modal content will be injected here -->
+            <div id="modal-body">
+                <!-- Content injected by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Load Timeline JavaScript -->
+    <script src="/timeline.js"></script>
+</body>
+</html>
+

@@ -4,14 +4,19 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.EnumType;
+import jakarta.persistence.Column;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Entity
 @DiscriminatorValue("SHOWER")
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Shower extends Activity {
 	
+	@Column(nullable = false)
 	private Integer lengthInMinutes;
 	
 	@Enumerated(EnumType.STRING)
+	@Column(nullable = false)
 	private Rating rating;
 	
 	public Integer getLengthInMinutes() {

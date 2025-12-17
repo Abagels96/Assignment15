@@ -92,11 +92,17 @@ public class SelfCareController {
      * Used by the frontend to record a shower activity with rating and length.
      */
     @PostMapping("/record/shower")
-    public ResponseEntity<Shower> recordShower(@RequestBody Shower shower) {
+    public ResponseEntity<Shower> recordShower(@RequestBody Map<String, Object> showerData) {
         try {
-            System.out.println("Received shower activity: " + shower);
+            System.out.println("Received shower data: " + showerData);
+            
+            // Convert Map to Shower object using ObjectMapper (same approach as /record endpoint)
+            Shower shower = objectMapper.convertValue(showerData, Shower.class);
+            
+            System.out.println("Converted shower activity: " + shower);
             System.out.println("Rating: " + shower.getRating());
             System.out.println("Length: " + shower.getLengthInMinutes());
+            System.out.println("Type: " + shower.getType());
             
             // Validate shower rating and length
             if (shower.getRating() == null) {
@@ -113,6 +119,7 @@ public class SelfCareController {
                 shower.setTimestamp(Instant.now());
             }
             
+            System.out.println("About to save shower - Rating: " + shower.getRating() + ", Length: " + shower.getLengthInMinutes());
             Shower savedShower = (Shower) selfCareService.saveActivity(shower);
             System.out.println("Shower saved successfully with ID: " + savedShower.getId());
             return new ResponseEntity<>(savedShower, HttpStatus.CREATED);
@@ -270,6 +277,26 @@ public class SelfCareController {
         }
         
         return new ResponseEntity<>(result, HttpStatus.OK);
+    }
+    
+    /**
+     * Endpoint: GET /selfcare/timeline
+     * Used by the timeline page to fetch all activities from the last 24 hours.
+     * Returns activities sorted chronologically (oldest first for timeline display).
+     */
+    @GetMapping("/timeline")
+    public ResponseEntity<List<Activity>> getTimeline() {
+        Instant now = Instant.now();
+        Instant twentyFourHoursAgo = now.minus(24, ChronoUnit.HOURS);
+        
+        // Get all activities and filter to last 24 hours
+        List<Activity> allActivities = selfCareService.findAllActivities();
+        List<Activity> last24Hours = allActivities.stream()
+                .filter(activity -> activity.getTimestamp().isAfter(twentyFourHoursAgo))
+                .sorted((a, b) -> a.getTimestamp().compareTo(b.getTimestamp())) // Oldest first
+                .collect(java.util.stream.Collectors.toList());
+        
+        return new ResponseEntity<>(last24Hours, HttpStatus.OK);
     }
 }
 
