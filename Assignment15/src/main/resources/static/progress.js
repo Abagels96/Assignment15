@@ -114,10 +114,13 @@ function renderChart(data7d) {
 
 // --- Attribute-Based Tracking ---
 async function loadAttributeData() {
+    console.log('loadAttributeData called');
     const type = document.getElementById('attribute-type').value;
     const period = document.getElementById('attribute-period').value;
     const container = document.getElementById('attribute-container');
     const loading = document.getElementById('attribute-loading');
+    
+    console.log('Type:', type, 'Period:', period);
     
     // Show loading
     if (loading) {
@@ -127,9 +130,19 @@ async function loadAttributeData() {
     container.innerHTML = '<p id="attribute-loading" class="text-center text-gray-400">Loading...</p>';
     
     try {
-        const response = await fetch(`${API_BASE_URL}/attributes?type=${type}&period=${period}`);
-        if (!response.ok) throw new Error('Network response was not ok');
+        const url = `${API_BASE_URL}/attributes?type=${type}&period=${period}`;
+        console.log('Fetching from:', url);
+        const response = await fetch(url);
+        console.log('Response status:', response.status);
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Response error:', errorText);
+            throw new Error(`Network response was not ok: ${response.status}`);
+        }
+        
         const data = await response.json();
+        console.log('Received data:', data);
         
         // Render based on activity type
         if (type === 'SLEEP') {
@@ -142,7 +155,7 @@ async function loadAttributeData() {
         
     } catch (error) {
         console.error('Failed to load attribute data:', error);
-        container.innerHTML = '<p class="text-center text-red-500">Failed to load data.</p>';
+        container.innerHTML = '<p class="text-center text-red-500">Failed to load data. Check console for details.</p>';
     }
 }
 
