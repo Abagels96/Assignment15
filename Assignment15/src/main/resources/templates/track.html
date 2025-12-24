@@ -252,6 +252,30 @@ body {
 	</div>
 	<!-- End Meal Description Modal -->
 
+	<!-- Edit Activity Modal -->
+	<div id="edit-activity-modal"
+		class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center p-4 hidden z-50">
+		<div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
+			<h3 id="edit-modal-title" class="text-lg font-semibold text-gray-900 mb-4">Edit
+				Activity</h3>
+
+			<!-- Edit Form (content injected by JS) -->
+			<div id="edit-modal-form">
+				<!-- Form fields will be injected here -->
+			</div>
+
+			<div class="mt-6 flex justify-end space-x-3">
+				<button onclick="closeEditModal()"
+					class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition">
+					Cancel</button>
+				<button onclick="saveActivityEdit()"
+					class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition">
+					Save Changes</button>
+			</div>
+		</div>
+	</div>
+	<!-- End Edit Activity Modal -->
+
 	<!-- Load Tracker JavaScript -->
 	<script src="/track.js"></script>
 </body>

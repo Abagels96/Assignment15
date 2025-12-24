@@ -92,9 +92,14 @@ function renderHistory(activities) {
                     <span class="text-sm whitespace-nowrap ml-4 flex-shrink-0">${formatTimestamp(timeToDisplay)}${endTimeToDisplay ? " - " + formatTimestamp(endTimeToDisplay) : ""}</span>
                     <span class="text-sm whitespace-nowrap ml-4 flex-shrink-0">${quality || ''}</span>
                 </div>
-                <button onclick="event.stopPropagation(); deleteActivity(${activity.id || 'null'}, 'sleep')" class="ml-4 flex-shrink-0 text-red-600 hover:text-red-800 hover:bg-red-100 px-3 py-1.5 rounded-md transition font-medium text-base" title="Delete sleep instance">
-                    ×
-                </button>
+                <div class="flex gap-2 ml-4 flex-shrink-0">
+                    <button onclick="event.stopPropagation(); openEditModal(${activity.id || 'null'})" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition text-sm font-medium" title="Edit sleep">
+                        Edit
+                    </button>
+                    <button onclick="event.stopPropagation(); deleteActivity(${activity.id || 'null'}, 'sleep')" class="text-red-600 hover:text-red-800 hover:bg-red-100 px-3 py-1.5 rounded-md transition font-medium text-base" title="Delete sleep instance">
+                        ×
+                    </button>
+                </div>
             `;
         } else if (activity.type === 'SHOWER') {
             // Convert rating enum to number for display
@@ -112,9 +117,14 @@ function renderHistory(activities) {
                     <span class="text-sm whitespace-nowrap ml-4 flex-shrink-0">${formatTimestamp(timeToDisplay)}</span>
                     <span class="text-sm whitespace-nowrap ml-4 flex-shrink-0">Rating: ${ratingDisplay}/5 | Length: ${lengthInMinutes || 'N/A'} min </span>					
                 </div>
-				<button onclick="event.stopPropagation(); deleteActivity(${activity.id || 'null'}, 'shower')" class="ml-4 flex-shrink-0 text-red-600 hover:text-red-800 hover:bg-red-100 px-3 py-1.5 rounded-md transition font-medium text-base" title="Delete shower instance">
-									                   ×
-									               </button> 
+                <div class="flex gap-2 ml-4 flex-shrink-0">
+                    <button onclick="event.stopPropagation(); openEditModal(${activity.id || 'null'})" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition text-sm font-medium" title="Edit shower">
+                        Edit
+                    </button>
+                    <button onclick="event.stopPropagation(); deleteActivity(${activity.id || 'null'}, 'shower')" class="text-red-600 hover:text-red-800 hover:bg-red-100 px-3 py-1.5 rounded-md transition font-medium text-base" title="Delete shower instance">
+                        ×
+                    </button>
+                </div>
             `;
         } else if (activity.type === 'EAT') {
             // Make Eat items clickable to show meal description
@@ -127,8 +137,14 @@ function renderHistory(activities) {
                     <span class="text-sm whitespace-nowrap ml-4 flex-shrink-0">${formatTimestamp(timeToDisplay)}</span>
                     ${hasMealDescription ? '<span class="text-sm ml-4 flex-shrink-0 text-green-600">Click to view meal </span>' : ''}
                 </div>
-				<button onclick="event.stopPropagation(); deleteActivity(${activity.id || 'null'}, 'meal')" class="ml-4 flex-shrink-0 text-red-600 hover:text-red-800 hover:bg-red-100 px-3 py-1.5 rounded-md transition font-medium text-base" title="Delete meal instance"> ×
-							               </button>
+                <div class="flex gap-2 ml-4 flex-shrink-0">
+                    <button onclick="event.stopPropagation(); openEditModal(${activity.id || 'null'})" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition text-sm font-medium" title="Edit meal">
+                        Edit
+                    </button>
+                    <button onclick="event.stopPropagation(); deleteActivity(${activity.id || 'null'}, 'meal')" class="text-red-600 hover:text-red-800 hover:bg-red-100 px-3 py-1.5 rounded-md transition font-medium text-base" title="Delete meal instance">
+                        ×
+                    </button>
+                </div>
             `;
             if (hasMealDescription) {
                 item.addEventListener('click', (e) => {
@@ -538,6 +554,279 @@ async function deleteActivity(id, activityType) {
         alert(`Failed to delete ${activityName} instance. Please try again.`);
     }
 }
+
+// --- Edit Activity Functions ---
+let currentEditingActivity = null;
+
+function openEditModal(activityId) {
+    // Find the activity in the history list
+    // We need to load it from the server since we don't have all activities in memory
+    fetch(`${API_BASE_URL}/history`)
+        .then(response => response.json())
+        .then(activities => {
+            const activity = activities.find(a => a.id === activityId);
+            if (!activity) {
+                alert('Activity not found');
+                return;
+            }
+            
+            currentEditingActivity = activity;
+            const modal = document.getElementById('edit-activity-modal');
+            const formContainer = document.getElementById('edit-modal-form');
+            const title = document.getElementById('edit-modal-title');
+            
+            title.textContent = `Edit ${activity.type}`;
+            formContainer.innerHTML = '';
+            
+            if (activity.type === 'EAT') {
+                const timestamp = new Date(activity.timestamp);
+                const dateStr = timestamp.toISOString().split('T')[0];
+                const timeStr = timestamp.toTimeString().split(' ')[0].substring(0, 5);
+                
+                formContainer.innerHTML = `
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                            <input type="date" id="edit-eat-date" value="${dateStr}" 
+                                   class="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Time</label>
+                            <input type="time" id="edit-eat-time" value="${timeStr}" 
+                                   class="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Meal Description</label>
+                            <textarea id="edit-eat-description" rows="3" 
+                                      class="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500">${(activity.mealDescription || '').replace(/"/g, '&quot;')}</textarea>
+                        </div>
+                    </div>
+                `;
+            } else if (activity.type === 'SLEEP') {
+                const startTime = activity.startDateTime ? new Date(activity.startDateTime) : new Date(activity.timestamp);
+                const startDateStr = startTime.toISOString().split('T')[0];
+                const startTimeStr = startTime.toTimeString().split(' ')[0].substring(0, 5);
+                
+                let endDateStr = '';
+                let endTimeStr = '';
+                if (activity.endDateTime) {
+                    const endTime = new Date(activity.endDateTime);
+                    endDateStr = endTime.toISOString().split('T')[0];
+                    endTimeStr = endTime.toTimeString().split(' ')[0].substring(0, 5);
+                }
+                
+                formContainer.innerHTML = `
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+                            <input type="date" id="edit-sleep-start-date" value="${startDateStr}" 
+                                   class="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Start Time</label>
+                            <input type="time" id="edit-sleep-start-time" value="${startTimeStr}" 
+                                   class="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">End Date (optional)</label>
+                            <input type="date" id="edit-sleep-end-date" value="${endDateStr}" 
+                                   class="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">End Time (optional)</label>
+                            <input type="time" id="edit-sleep-end-time" value="${endTimeStr}" 
+                                   class="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Quality</label>
+                            <select id="edit-sleep-quality" 
+                                    class="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500">
+                                <option value="POOR" ${activity.quality === 'POOR' ? 'selected' : ''}>Poor</option>
+                                <option value="FAIR" ${activity.quality === 'FAIR' ? 'selected' : ''}>Fair</option>
+                                <option value="GOOD" ${activity.quality === 'GOOD' ? 'selected' : ''}>Good</option>
+                                <option value="EXCELLENT" ${activity.quality === 'EXCELLENT' ? 'selected' : ''}>Excellent</option>
+                            </select>
+                        </div>
+                    </div>
+                `;
+            } else if (activity.type === 'SHOWER') {
+                const timestamp = new Date(activity.timestamp);
+                const dateStr = timestamp.toISOString().split('T')[0];
+                const timeStr = timestamp.toTimeString().split(' ')[0].substring(0, 5);
+                
+                const ratingEnum = activity.rating || 'THREE';
+                
+                formContainer.innerHTML = `
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                            <input type="date" id="edit-shower-date" value="${dateStr}" 
+                                   class="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Time</label>
+                            <input type="time" id="edit-shower-time" value="${timeStr}" 
+                                   class="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Rating</label>
+                            <select id="edit-shower-rating" 
+                                    class="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500">
+                                <option value="ONE" ${ratingEnum === 'ONE' ? 'selected' : ''}>1 - Poor</option>
+                                <option value="TWO" ${ratingEnum === 'TWO' ? 'selected' : ''}>2 - Fair</option>
+                                <option value="THREE" ${ratingEnum === 'THREE' ? 'selected' : ''}>3 - Good</option>
+                                <option value="FOUR" ${ratingEnum === 'FOUR' ? 'selected' : ''}>4 - Very Good</option>
+                                <option value="FIVE" ${ratingEnum === 'FIVE' ? 'selected' : ''}>5 - Excellent</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Length (minutes)</label>
+                            <input type="number" id="edit-shower-length" value="${activity.lengthInMinutes || ''}" 
+                                   min="1" step="1" 
+                                   class="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500">
+                        </div>
+                    </div>
+                `;
+            }
+            
+            modal.classList.remove('hidden');
+        })
+        .catch(error => {
+            console.error('Failed to load activity:', error);
+            alert('Failed to load activity details');
+        });
+}
+
+function closeEditModal() {
+    const modal = document.getElementById('edit-activity-modal');
+    modal.classList.add('hidden');
+    currentEditingActivity = null;
+}
+
+async function saveActivityEdit() {
+    if (!currentEditingActivity) return;
+    
+    const activity = currentEditingActivity;
+    let payload = {};
+    
+    try {
+        if (activity.type === 'EAT') {
+            const dateInput = document.getElementById('edit-eat-date');
+            const timeInput = document.getElementById('edit-eat-time');
+            const descriptionInput = document.getElementById('edit-eat-description');
+            
+            if (!dateInput || !timeInput || !descriptionInput) {
+                alert('Form fields not found');
+                return;
+            }
+            
+            const date = dateInput.value;
+            const time = timeInput.value;
+            const description = descriptionInput.value.trim();
+            
+            if (!description) {
+                alert('Meal description is required');
+                return;
+            }
+            
+            const dateTime = new Date(`${date}T${time}:00`);
+            payload = {
+                timestamp: dateTime.toISOString(),
+                mealDescription: description
+            };
+            
+        } else if (activity.type === 'SLEEP') {
+            const startDateInput = document.getElementById('edit-sleep-start-date');
+            const startTimeInput = document.getElementById('edit-sleep-start-time');
+            const endDateInput = document.getElementById('edit-sleep-end-date');
+            const endTimeInput = document.getElementById('edit-sleep-end-time');
+            const qualitySelect = document.getElementById('edit-sleep-quality');
+            
+            if (!startDateInput || !startTimeInput || !qualitySelect) {
+                alert('Form fields not found');
+                return;
+            }
+            
+            const startDate = startDateInput.value;
+            const startTime = startTimeInput.value;
+            const endDate = endDateInput.value;
+            const endTime = endTimeInput.value;
+            const quality = qualitySelect.value;
+            
+            if (!startDate || !startTime || !quality) {
+                alert('Start date, time, and quality are required');
+                return;
+            }
+            
+            payload = {
+                startDateTime: `${startDate}T${startTime}:00`,
+                quality: quality
+            };
+            
+            if (endDate && endTime) {
+                payload.endDateTime = `${endDate}T${endTime}:00`;
+            } else {
+                payload.endDateTime = null;
+            }
+            
+        } else if (activity.type === 'SHOWER') {
+            const dateInput = document.getElementById('edit-shower-date');
+            const timeInput = document.getElementById('edit-shower-time');
+            const ratingSelect = document.getElementById('edit-shower-rating');
+            const lengthInput = document.getElementById('edit-shower-length');
+            
+            if (!dateInput || !timeInput || !ratingSelect || !lengthInput) {
+                alert('Form fields not found');
+                return;
+            }
+            
+            const date = dateInput.value;
+            const time = timeInput.value;
+            const rating = ratingSelect.value;
+            const length = parseInt(lengthInput.value);
+            
+            if (!rating || !length || length < 1) {
+                alert('Rating and length (minimum 1 minute) are required');
+                return;
+            }
+            
+            const dateTime = new Date(`${date}T${time}:00`);
+            payload = {
+                timestamp: dateTime.toISOString(),
+                rating: rating,
+                lengthInMinutes: length
+            };
+        }
+        
+        // Send PUT request
+        const response = await fetch(`${API_BASE_URL}/activity/${activity.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Failed to update: ${response.status} - ${errorText}`);
+        }
+        
+        // Refresh history
+        closeEditModal();
+        loadHistory();
+        
+    } catch (error) {
+        console.error('Failed to save edit:', error);
+        alert('Failed to save changes: ' + error.message);
+    }
+}
+
+// Close modal when clicking outside
+document.addEventListener('click', (e) => {
+    const modal = document.getElementById('edit-activity-modal');
+    if (e.target === modal) {
+        closeEditModal();
+    }
+});
 
 // --- Initial Load ---
 document.addEventListener('DOMContentLoaded', () => {

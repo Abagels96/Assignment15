@@ -6,6 +6,8 @@ import com.coderscampus.Assignment15.domain.Activity;
 import com.coderscampus.Assignment15.domain.Sleep;
 import com.coderscampus.Assignment15.domain.Eat;
 import com.coderscampus.Assignment15.domain.Shower;
+import com.coderscampus.Assignment15.domain.SleepQuality;
+import com.coderscampus.Assignment15.domain.Rating;
 import com.coderscampus.Assignment15.service.SelfCareService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,9 +16,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * REST Controller for Self-Care Activities.
@@ -31,13 +36,13 @@ import java.util.Map;
 public class SelfCareController {
 
     private final SelfCareService selfCareService;
+    private final ObjectMapper objectMapper;
 
     @Autowired
-    public SelfCareController(SelfCareService selfCareService) {
+    public SelfCareController(SelfCareService selfCareService, ObjectMapper objectMapper) {
         this.selfCareService = selfCareService;
+        this.objectMapper = objectMapper;
     }
-
-    private final ObjectMapper objectMapper = new ObjectMapper();
 
     /**
      * Endpoint: POST /selfcare/record
@@ -81,7 +86,14 @@ public class SelfCareController {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
         
-        // Ensure timestamp is set on the server-side if not provided
+        // Align timestamp to startDateTime if available, otherwise use current time
+        if (sleep.getStartDateTime() != null) {
+            sleep.setTimestamp(sleep.getStartDateTime()
+                .atZone(ZoneId.systemDefault())
+                .toInstant());
+        } else if (sleep.getTimestamp() == null) {
+            sleep.setTimestamp(Instant.now());
+        }
        
         Sleep savedSleep = (Sleep) selfCareService.saveActivity(sleep);
         return new ResponseEntity<>(savedSleep, HttpStatus.CREATED);
@@ -219,6 +231,155 @@ public class SelfCareController {
     public ResponseEntity<Void> deleteActivity(@PathVariable Long id) {
         selfCareService.deleteActivityById(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    /**
+     * Endpoint: PUT /selfcare/activity/{id}
+     * Used by the frontend to update an existing activity (Eat, Sleep, Shower).
+     * Updates relevant fields based on activity type and persists changes.
+     */
+    @PutMapping("/activity/{id}")
+    public ResponseEntity<Activity> updateActivity(@PathVariable Long id, @RequestBody Map<String, Object> activityData) {
+        try {
+            // Find existing activity
+            Activity existingActivity = selfCareService.findActivityById(id);
+            if (existingActivity == null) {
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            }
+
+            // Handle updates based on activity type
+            if (existingActivity instanceof Eat) {
+                Eat eat = (Eat) existingActivity;
+                
+                // Update timestamp if provided
+                if (activityData.containsKey("timestamp")) {
+                    String timestampStr = (String) activityData.get("timestamp");
+                    if (timestampStr != null && !timestampStr.isEmpty()) {
+                        eat.setTimestamp(Instant.parse(timestampStr));
+                    }
+                }
+                
+                // Update meal description if provided
+                if (activityData.containsKey("mealDescription")) {
+                    String mealDescription = (String) activityData.get("mealDescription");
+                    if (mealDescription != null && mealDescription.trim().isEmpty()) {
+                        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+                    }
+                    eat.setMealDescription(mealDescription);
+                }
+                
+                // Validate meal description is not empty
+                if (eat.getMealDescription() == null || eat.getMealDescription().trim().isEmpty()) {
+                    return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+                }
+                
+                Activity updated = selfCareService.saveActivity(eat);
+                return new ResponseEntity<>(updated, HttpStatus.OK);
+                
+            } else if (existingActivity instanceof Sleep) {
+                Sleep sleep = (Sleep) existingActivity;
+                
+                // Update startDateTime if provided
+                if (activityData.containsKey("startDateTime")) {
+                    String startDateTimeStr = (String) activityData.get("startDateTime");
+                    if (startDateTimeStr != null && !startDateTimeStr.isEmpty()) {
+                        sleep.setStartDateTime(LocalDateTime.parse(startDateTimeStr));
+                    }
+                }
+                
+                // Update endDateTime if provided
+                if (activityData.containsKey("endDateTime")) {
+                    String endDateTimeStr = (String) activityData.get("endDateTime");
+                    if (endDateTimeStr != null && !endDateTimeStr.isEmpty()) {
+                        sleep.setEndDateTime(LocalDateTime.parse(endDateTimeStr));
+                    } else {
+                        sleep.setEndDateTime(null);
+                    }
+                }
+                
+                // Update quality if provided
+                if (activityData.containsKey("quality")) {
+                    String qualityStr = (String) activityData.get("quality");
+                    if (qualityStr != null) {
+                        try {
+                            sleep.setQuality(SleepQuality.valueOf(qualityStr));
+                        } catch (IllegalArgumentException e) {
+                            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+                        }
+                    }
+                }
+                
+                // Validate required fields
+                if (sleep.getStartDateTime() == null || sleep.getQuality() == null) {
+                    return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+                }
+                
+                // Align timestamp to startDateTime for summary calculations
+                sleep.setTimestamp(sleep.getStartDateTime()
+                    .atZone(ZoneId.systemDefault())
+                    .toInstant());
+                
+                Activity updated = selfCareService.saveActivity(sleep);
+                return new ResponseEntity<>(updated, HttpStatus.OK);
+                
+            } else if (existingActivity instanceof Shower) {
+                Shower shower = (Shower) existingActivity;
+                
+                // Update timestamp if provided
+                if (activityData.containsKey("timestamp")) {
+                    String timestampStr = (String) activityData.get("timestamp");
+                    if (timestampStr != null && !timestampStr.isEmpty()) {
+                        shower.setTimestamp(Instant.parse(timestampStr));
+                    }
+                }
+                
+                // Update rating if provided
+                if (activityData.containsKey("rating")) {
+                    String ratingStr = (String) activityData.get("rating");
+                    if (ratingStr != null) {
+                        try {
+                            shower.setRating(Rating.valueOf(ratingStr));
+                        } catch (IllegalArgumentException e) {
+                            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+                        }
+                    }
+                }
+                
+                // Update lengthInMinutes if provided
+                if (activityData.containsKey("lengthInMinutes")) {
+                    Object lengthObj = activityData.get("lengthInMinutes");
+                    if (lengthObj != null) {
+                        Integer length;
+                        if (lengthObj instanceof Integer) {
+                            length = (Integer) lengthObj;
+                        } else if (lengthObj instanceof String) {
+                            length = Integer.parseInt((String) lengthObj);
+                        } else {
+                            length = ((Number) lengthObj).intValue();
+                        }
+                        shower.setLengthInMinutes(length);
+                    }
+                }
+                
+                // Validate required fields
+                if (shower.getRating() == null) {
+                    return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+                }
+                if (shower.getLengthInMinutes() == null || shower.getLengthInMinutes() < 1) {
+                    return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+                }
+                
+                Activity updated = selfCareService.saveActivity(shower);
+                return new ResponseEntity<>(updated, HttpStatus.OK);
+            }
+            
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            
+        } catch (Exception e) {
+            System.err.println("Error updating activity: " + e.getMessage());
+            e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
     
     /**

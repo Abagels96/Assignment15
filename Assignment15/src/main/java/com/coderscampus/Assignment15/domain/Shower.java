@@ -12,11 +12,11 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Shower extends Activity {
 	
-	@Column(nullable = false)
+	
 	private Integer lengthInMinutes;
 	
 	@Enumerated(EnumType.STRING)
-	@Column(nullable = false)
+	
 	private Rating rating;
 	
 	public Integer getLengthInMinutes() {

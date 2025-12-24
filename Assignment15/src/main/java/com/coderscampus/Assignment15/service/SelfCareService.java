@@ -41,6 +41,10 @@ public class SelfCareService {
         activityRepository.deleteById(id);
     }
 
+    public Activity findActivityById(Long id) {
+        return activityRepository.findById(id).orElse(null);
+    }
+
     // This is for the progress page!
     public Map<String, Long> getSummaryForPeriod(Instant after) {
         return activityRepository.countActivitiesByTypeAfter(after)
