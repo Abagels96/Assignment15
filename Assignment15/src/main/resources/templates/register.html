@@ -36,6 +36,10 @@
                             <span class="text-2xl">📊</span>
                             <span class="text-gray-700 font-medium">Progress</span>
                         </a>
+                        <a href="/profile" class="block px-4 py-3 hover:bg-blue-50 transition flex items-center space-x-3">
+                            <span class="text-2xl">👤</span>
+                            <span class="text-gray-700 font-medium">Profile</span>
+                        </a>
                         <a href="/login" class="block px-4 py-3 hover:bg-blue-50 transition flex items-center space-x-3">
                             <span class="text-2xl">🔐</span>
                             <span class="text-gray-700 font-medium">Login</span>
@@ -79,6 +83,50 @@
                         class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition text-gray-900"
                         placeholder="e.g. Abby"
                     />
+                </div>
+
+                <!-- Number of Children -->
+                <div>
+                    <label for="numChildren" class="block text-sm font-medium text-gray-700 mb-2">Number of children</label>
+                    <input
+                        type="number"
+                        id="numChildren"
+                        name="numChildren"
+                        inputmode="numeric"
+                        required
+                        min="1"
+                        step="1"
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition text-gray-900"
+                        placeholder="e.g. 2"
+                    />
+                    <p class="mt-1 text-xs text-gray-500">Use 0 if you don’t have children.</p>
+                </div>
+
+                <!-- Children Names (optional) -->
+                <div>
+                    <label for="childNames" class="block text-sm font-medium text-gray-700 mb-2">Children’s names (optional)</label>
+                    <input
+                        type="text"
+                        id="childNames"
+                        name="childNames"
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition text-gray-900"
+                        placeholder="e.g. Ava, Noah"
+                    />
+                    <p class="mt-1 text-xs text-gray-500">Comma-separated is fine.</p>
+                </div>
+
+                <!-- Children Ages -->
+                <div>
+                    <label for="childAges" class="block text-sm font-medium text-gray-700 mb-2">Children’s ages</label>
+                    <input
+                        type="text"
+                        id="childAges"
+                        name="childAges"
+                        required
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition text-gray-900"
+                        placeholder="e.g. 2, 5"
+                    />
+                    <p class="mt-1 text-xs text-gray-500">Comma-separated is fine.</p>
                 </div>
 
                 <!-- Password -->

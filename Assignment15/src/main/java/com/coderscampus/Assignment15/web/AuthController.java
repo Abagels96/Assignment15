@@ -2,12 +2,15 @@ package com.coderscampus.Assignment15.web;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.coderscampus.Assignment15.domain.User;
+import com.coderscampus.Assignment15.dto.ProfileResponse;
 import com.coderscampus.Assignment15.dto.RegisterRequest;
 import com.coderscampus.Assignment15.dto.UserResponse;
 import com.coderscampus.Assignment15.service.UserService;
@@ -32,6 +35,31 @@ public class AuthController {
 			return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
 		} catch (IllegalStateException ex) {
 			return new ResponseEntity<>(ex.getMessage(), HttpStatus.CONFLICT);
+		}
+	}
+
+	@GetMapping("/me")
+	public ResponseEntity<?> me(Authentication authentication) {
+		if (authentication == null || !authentication.isAuthenticated()) {
+			return new ResponseEntity<>("Not authenticated.", HttpStatus.UNAUTHORIZED);
+		}
+
+		try {
+			User user = userService.findByUsername(authentication.getName());
+			return new ResponseEntity<>(
+					new ProfileResponse(
+							user.getUserId(),
+							user.getUsername(),
+							user.getDisplayName(),
+							user.getNumChildren(),
+							user.getChildNames(),
+							user.getChildAges()
+					),
+					HttpStatus.OK);
+		} catch (IllegalArgumentException ex) {
+			return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
+		} catch (IllegalStateException ex) {
+			return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
 		}
 	}
 }

@@ -1,12 +1,32 @@
 package com.coderscampus.Assignment15.dto;
 
-public class RegisterRequest {
+public class ProfileResponse {
+	private Long userId;
 	private String username;
 	private String displayName;
-	private String password;
 	private Integer numChildren;
 	private String childNames;
 	private String childAges;
+
+	public ProfileResponse() {
+	}
+
+	public ProfileResponse(Long userId, String username, String displayName, Integer numChildren, String childNames, String childAges) {
+		this.userId = userId;
+		this.username = username;
+		this.displayName = displayName;
+		this.numChildren = numChildren;
+		this.childNames = childNames;
+		this.childAges = childAges;
+	}
+
+	public Long getUserId() {
+		return userId;
+	}
+
+	public void setUserId(Long userId) {
+		this.userId = userId;
+	}
 
 	public String getUsername() {
 		return username;
@@ -22,14 +42,6 @@ public class RegisterRequest {
 
 	public void setDisplayName(String displayName) {
 		this.displayName = displayName;
-	}
-
-	public String getPassword() {
-		return password;
-	}
-
-	public void setPassword(String password) {
-		this.password = password;
 	}
 
 	public Integer getNumChildren() {

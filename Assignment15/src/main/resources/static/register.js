@@ -20,11 +20,22 @@
 
     const username = document.getElementById('username').value;
     const displayName = document.getElementById('displayName').value;
+    const numChildrenRaw = document.getElementById('numChildren').value;
+    const childNames = document.getElementById('childNames').value;
+    const childAges = document.getElementById('childAges').value;
     const password = document.getElementById('password').value;
 
     // quick client-side checks (server also validates)
     if (!username || username.trim().length < 3) return setMessage('error', 'Username must be at least 3 characters.');
     if (!displayName || !displayName.trim()) return setMessage('error', 'Display name is required.');
+    const numChildren = Number.parseInt(numChildrenRaw, 10);
+    if (!Number.isFinite(numChildren) || Number.isNaN(numChildren) || numChildren < 1) {
+      return setMessage('error', 'Number of children must be 1 or greater.');
+    }
+    const childAgesTrimmed = (childAges || '').trim();
+    if (numChildren > 0 && !childAgesTrimmed) {
+      return setMessage('error', 'Children’s ages are required (use comma-separated ages).');
+    }
     if (!password || password.length < 8) return setMessage('error', 'Password must be at least 8 characters.');
 
     const submitBtn = form.querySelector('button[type="submit"]');
@@ -38,6 +49,9 @@
         body: JSON.stringify({
           username: username.trim(),
           displayName: displayName.trim(),
+          numChildren,
+          childNames: (childNames || '').trim() || null,
+          childAges: childAgesTrimmed || '',
           password,
         }),
       });

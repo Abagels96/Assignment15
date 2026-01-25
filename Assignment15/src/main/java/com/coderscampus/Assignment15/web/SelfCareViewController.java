@@ -49,6 +49,11 @@ public class SelfCareViewController {
     public String register() {
     	return "register";
     }
+
+    @GetMapping("/profile")
+    public String profile() {
+    	return "profile";
+    }
     
     /**
      * Serves the timeline page (timeline.html).

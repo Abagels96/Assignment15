@@ -23,12 +23,22 @@ public class UserService {
 		String username = safeTrim(request.getUsername());
 		String displayName = safeTrim(request.getDisplayName());
 		String password = request.getPassword();
+		Integer numChildren = request.getNumChildren();
+		String childNames = safeTrim(request.getChildNames());
+		String childAges = safeTrim(request.getChildAges());
 
 		if (username == null || username.length() < 3) {
 			throw new IllegalArgumentException("Username must be at least 3 characters.");
 		}
 		if (displayName == null || displayName.isBlank()) {
 			throw new IllegalArgumentException("Display name is required.");
+		}
+		if (numChildren == null || numChildren < 1) {
+			throw new IllegalArgumentException("Number of children must be 1 or greater.");
+		}
+		// `childAges` is non-nullable in the entity.
+		if (childAges == null || childAges.isBlank()) {
+			throw new IllegalArgumentException("Children ages are required.");
 		}
 		if (password == null || password.length() < 8) {
 			throw new IllegalArgumentException("Password must be at least 8 characters.");
@@ -41,8 +51,21 @@ public class UserService {
 		user.setUsername(username);
 		user.setDisplayName(displayName);
 		user.setPassword(passwordEncoder.encode(password));
+		user.setNumChildren(numChildren);
+		user.setChildNames(childNames);
+		user.setChildAges(childAges);
 
 		return userRepository.save(user);
+	}
+
+	@Transactional(readOnly = true)
+	public User findByUsername(String username) {
+		String trimmed = safeTrim(username);
+		if (trimmed == null) {
+			throw new IllegalArgumentException("Username is required.");
+		}
+		return userRepository.findByUsernameIgnoreCase(trimmed)
+				.orElseThrow(() -> new IllegalStateException("User not found."));
 	}
 
 	private static String safeTrim(String value) {
