@@ -245,7 +245,24 @@ async function recordActivity(type) {
     }
 }
 
+function hideAllActivityForms() {
+    const sleepFormSection = document.getElementById('sleep-form-section');
+    const showerFormSection = document.getElementById('shower-form-section');
+    const eatFormSection = document.getElementById('eat-form-section');
+    
+    if (sleepFormSection) {
+        sleepFormSection.classList.add('hidden');
+    }
+    if (showerFormSection) {
+        showerFormSection.classList.add('hidden');
+    }
+    if (eatFormSection) {
+        eatFormSection.classList.add('hidden');
+    }
+}
+
 function showSleepForm() {
+    hideAllActivityForms();
     const sleepFormSection = document.getElementById('sleep-form-section');
     if (sleepFormSection) {
         sleepFormSection.classList.remove('hidden');
@@ -278,6 +295,7 @@ function hideSleepForm() {
 }
 
 function showShowerForm() {
+    hideAllActivityForms();
     const showerFormSection = document.getElementById('shower-form-section');
     if (showerFormSection) {
         showerFormSection.classList.remove('hidden');
@@ -306,6 +324,7 @@ function hideShowerForm() {
 }
 
 function showEatForm() {
+    hideAllActivityForms();
     const eatFormSection = document.getElementById('eat-form-section');
     if (eatFormSection) {
         eatFormSection.classList.remove('hidden');
