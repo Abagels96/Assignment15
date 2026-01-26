@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - Mom's Self-Care Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f4f8fb; }
+    </style>
+</head>
+<body class="h-screen flex flex-col p-4 overflow-hidden">
+    <div class="w-full bg-white shadow-xl rounded-2xl p-6 md:p-8 my-4 flex flex-col h-[calc(100vh-2rem)]">
+        <header class="relative mb-8 flex-shrink-0">
+            <div class="flex items-center justify-between mb-6">
+                <h1 class="text-3xl md:text-4xl font-extrabold text-blue-800">Profile</h1>
+                <div class="relative">
+                    <button id="menu-toggle" class="text-3xl hover:scale-110 transition-transform focus:outline-none" title="Menu">
+                        ☰
+                    </button>
+                    <div id="dropdown-menu" class="hidden absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
+                        <a href="/track" class="block px-4 py-3 hover:bg-blue-50 transition flex items-center space-x-3">
+                            <span class="text-2xl">📋</span>
+                            <span class="text-gray-700 font-medium">Tracker</span>
+                        </a>
+                        <a href="/progress" class="block px-4 py-3 hover:bg-blue-50 transition flex items-center space-x-3">
+                            <span class="text-2xl">📊</span>
+                            <span class="text-gray-700 font-medium">Progress</span>
+                        </a>
+                        <a href="/timeline" class="block px-4 py-3 hover:bg-blue-50 transition flex items-center space-x-3">
+                            <span class="text-2xl">🗓️</span>
+                            <span class="text-gray-700 font-medium">Timeline</span>
+                        </a>
+                        <div class="border-t border-gray-200 my-1"></div>
+                        <a href="/logout" class="block px-4 py-3 hover:bg-blue-50 transition flex items-center space-x-3">
+                            <span class="text-2xl">🚪</span>
+                            <span class="text-gray-700 font-medium">Logout</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <p class="text-gray-500 text-center">Your saved account details.</p>
+        </header>
+
+        <main class="flex-1 flex items-start justify-center overflow-auto">
+            <div class="w-full max-w-2xl space-y-5">
+                <div id="profile-message" class="hidden rounded-lg border px-4 py-3 text-sm"></div>
+
+                <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="rounded-xl bg-blue-50 p-4">
+                            <div class="text-xs uppercase tracking-wide text-blue-700">Username</div>
+                            <div id="profile-username" class="mt-1 text-lg font-semibold text-gray-900">—</div>
+                        </div>
+                        <div class="rounded-xl bg-blue-50 p-4">
+                            <div class="text-xs uppercase tracking-wide text-blue-700">Display name</div>
+                            <div id="profile-displayName" class="mt-1 text-lg font-semibold text-gray-900">—</div>
+                        </div>
+                        <div class="rounded-xl bg-blue-50 p-4">
+                            <div class="text-xs uppercase tracking-wide text-blue-700">Number of children</div>
+                            <div id="profile-numChildren" class="mt-1 text-lg font-semibold text-gray-900">—</div>
+                        </div>
+                        <div class="rounded-xl bg-blue-50 p-4">
+                            <div class="text-xs uppercase tracking-wide text-blue-700">Children’s names</div>
+                            <div id="profile-childNames" class="mt-1 text-lg font-semibold text-gray-900">—</div>
+                        </div>
+                        <div class="rounded-xl bg-blue-50 p-4 md:col-span-2">
+                            <div class="text-xs uppercase tracking-wide text-blue-700">Children’s ages</div>
+                            <div id="profile-childAges" class="mt-1 text-lg font-semibold text-gray-900">—</div>
+                        </div>
+                    </div>
+                </div>
+
+                <p class="text-sm text-gray-600 text-center">
+                    Need to change something? (Not implemented yet) — for now, re-register or update via database.
+                </p>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.getElementById('menu-toggle').addEventListener('click', function(e) {
+            e.stopPropagation();
+            const dropdown = document.getElementById('dropdown-menu');
+            dropdown.classList.toggle('hidden');
+        });
+        document.addEventListener('click', function(e) {
+            const dropdown = document.getElementById('dropdown-menu');
+            const toggle = document.getElementById('menu-toggle');
+            if (!dropdown.contains(e.target) && !toggle.contains(e.target)) {
+                dropdown.classList.add('hidden');
+            }
+        });
+    </script>
+
+    <script src="/profile.js"></script>
+</body>
+</html>
+
+

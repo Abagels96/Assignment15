@@ -36,6 +36,14 @@
                             <span class="text-2xl">📊</span>
                             <span class="text-gray-700 font-medium">Progress</span>
                         </a>
+                        <a href="/profile" class="block px-4 py-3 hover:bg-blue-50 transition flex items-center space-x-3">
+                            <span class="text-2xl">👤</span>
+                            <span class="text-gray-700 font-medium">Profile</span>
+                        </a>
+                        <a href="/register" class="block px-4 py-3 hover:bg-blue-50 transition flex items-center space-x-3">
+                            <span class="text-2xl">✨</span>
+                            <span class="text-gray-700 font-medium">Register</span>
+                        </a>
                         <a href="#" class="block px-4 py-3 hover:bg-blue-50 transition flex items-center space-x-3 opacity-75" title="Coming Soon">
                             <span class="text-2xl">⏳</span>
                             <span class="text-gray-700 font-medium">In Progress</span>
@@ -52,7 +60,8 @@
 
         <!-- Login Form -->
         <main class="flex-1 flex items-center justify-center">
-            <form id="login-form" class="w-full max-w-md space-y-6">
+            <form  method="post" action="/login" id="login-form" class="w-full max-w-md space-y-6" >
+            
             <!-- Username Field -->
             <div>
                 <label for="username" class="block text-sm font-medium text-gray-700 mb-2">
@@ -90,6 +99,11 @@
             >
                 Sign In
             </button>
+            
+            <p class="text-sm text-gray-600 text-center">
+                New here?
+                <a href="/register" class="text-blue-700 hover:underline font-medium">Create an account</a>
+            </p>
             </form>
         </main>
     </div>
@@ -112,12 +126,8 @@
             }
         });
 
-        // Handle form submission (placeholder - implement actual login logic later)
-        document.getElementById('login-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            // Login logic will be implemented later
-            console.log('Login form submitted');
-        });
+        // Let the browser submit the form normally so Spring Security can authenticate
+        // and redirect to the configured defaultSuccessUrl (e.g., "/track").
     </script>
 
     <!-- Load Login JavaScript if exists -->

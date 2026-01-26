@@ -5,19 +5,66 @@ package com.coderscampus.Assignment15.domain;
 	import jakarta.persistence.GenerationType;
 	import jakarta.persistence.Id;
 	import jakarta.persistence.Table;
+	import jakarta.persistence.Column;
 @Entity
 	@Table(name = "users")
 public class User {
 	
 		
+		public Integer getNumChildren() {
+		return numChildren;
+	}
+
+
+	public void setNumChildren(Integer numChildren) {
+		this.numChildren = numChildren;
+	}
+
+
+	public String getChildNames() {
+		return childNames;
+	}
+
+
+	public void setChildNames(String childNames) {
+		this.childNames = childNames;
+	}
+
+
+	public String getChildAges() {
+		return childAges;
+	}
+
+
+	public void setChildAges(String childAges) {
+		this.childAges = childAges;
+	}
+
+
 		@Id
 	    @GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long userId;
 		
+		@Column(nullable = false, unique = true)
 	private String username;
 
 
+		@Column(nullable = false)
+	private String displayName;
+
+		// Store a hashed password (BCrypt), not plaintext
+		@Column(nullable = false)
 	private String password;
+
+	@Column(nullable = false)
+	private Integer numChildren;
+	@Column
+	private String childNames;
+	@Column(nullable = false)
+	private String childAges;
+
+	
+	
 		  public Long getUserId() {
 			return userId;
 		}
@@ -35,6 +82,16 @@ public class User {
 
 		public void setUsername(String username) {
 			this.username = username;
+		}
+
+
+		public String getDisplayName() {
+			return displayName;
+		}
+
+
+		public void setDisplayName(String displayName) {
+			this.displayName = displayName;
 		}
 
 
