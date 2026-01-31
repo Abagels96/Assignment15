@@ -82,14 +82,24 @@
                 <label for="password" class="block text-sm font-medium text-gray-700 mb-2">
                     Password
                 </label>
-                <input 
-                    type="password" 
-                    id="password" 
-                    name="password" 
-                    required
-                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition text-gray-900"
-                    placeholder="Enter your password"
-                />
+                <div class="relative">
+                    <input 
+                        type="password" 
+                        id="password" 
+                        name="password" 
+                        required
+                        class="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition text-gray-900"
+                        placeholder="Enter your password"
+                    />
+                    <button 
+                        type="button"
+                        id="toggle-password"
+                        class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none transition"
+                        aria-label="Toggle password visibility"
+                    >
+                        <span id="toggle-password-icon">👁️</span>
+                    </button>
+                </div>
             </div>
 
             <!-- Login Button -->
@@ -125,6 +135,19 @@
                 dropdown.classList.add('hidden');
             }
         });
+
+        // Password visibility toggle
+        const passwordInput = document.getElementById('password');
+        const togglePasswordBtn = document.getElementById('toggle-password');
+        const togglePasswordIcon = document.getElementById('toggle-password-icon');
+        
+        if (togglePasswordBtn && passwordInput) {
+            togglePasswordBtn.addEventListener('click', function() {
+                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordInput.setAttribute('type', type);
+                togglePasswordIcon.textContent = type === 'password' ? '👁️' : '🙈';
+            });
+        }
 
         // Let the browser submit the form normally so Spring Security can authenticate
         // and redirect to the configured defaultSuccessUrl (e.g., "/track").

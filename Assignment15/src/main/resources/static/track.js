@@ -183,7 +183,9 @@ async function loadHistory() {
     
     loading.style.display = 'block';
     try {
-        const response = await fetch(`${API_BASE_URL}/history`);
+        const response = await fetch(`${API_BASE_URL}/history`, {
+            credentials: 'include'
+        });
         if (!response.ok) throw new Error('Network response was not ok');
         const history = await response.json();
         loading.style.display = 'none';
@@ -231,6 +233,7 @@ async function recordActivity(type) {
         const response = await fetch(`${API_BASE_URL}/record`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
             body: JSON.stringify(newActivity)
         });
 
@@ -388,6 +391,7 @@ async function submitSleep() {
         const response = await fetch(`${API_BASE_URL}/record/sleep`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
             body: JSON.stringify(sleepActivity)
         });
 
@@ -436,6 +440,7 @@ async function submitShower() {
         const response = await fetch(`${API_BASE_URL}/record/shower`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
             body: JSON.stringify(showerActivity)
         });
 
@@ -486,6 +491,7 @@ async function submitEat() {
         const response = await fetch(`${API_BASE_URL}/record/eat`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
             body: JSON.stringify(eatActivity)
         });
 
@@ -512,7 +518,8 @@ function cancelClear() {
 async function clearHistoryConfirmed() {
     try {
          const response = await fetch(`${API_BASE_URL}/history/clear`, {
-            method: 'DELETE'
+            method: 'DELETE',
+            credentials: 'include'
          });
          if (!response.ok) throw new Error('Failed to clear history');
          
@@ -561,7 +568,8 @@ async function deleteActivity(id, activityType) {
     
     try {
         const response = await fetch(`${API_BASE_URL}/activity/${id}`, {
-            method: 'DELETE'
+            method: 'DELETE',
+            credentials: 'include'
         });
         
         if (!response.ok) throw new Error(`Failed to delete ${activityName} activity`);
@@ -580,7 +588,9 @@ let currentEditingActivity = null;
 function openEditModal(activityId) {
     // Find the activity in the history list
     // We need to load it from the server since we don't have all activities in memory
-    fetch(`${API_BASE_URL}/history`)
+    fetch(`${API_BASE_URL}/history`, {
+        credentials: 'include'
+    })
         .then(response => response.json())
         .then(activities => {
             const activity = activities.find(a => a.id === activityId);
@@ -821,6 +831,7 @@ async function saveActivityEdit() {
         const response = await fetch(`${API_BASE_URL}/activity/${activity.id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
             body: JSON.stringify(payload)
         });
         

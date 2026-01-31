@@ -8,16 +8,22 @@ import com.coderscampus.Assignment15.domain.Eat;
 import com.coderscampus.Assignment15.domain.Shower;
 import com.coderscampus.Assignment15.domain.SleepQuality;
 import com.coderscampus.Assignment15.domain.Rating;
+import com.coderscampus.Assignment15.domain.Track;
+import com.coderscampus.Assignment15.domain.User;
 import com.coderscampus.Assignment15.service.SelfCareService;
+import com.coderscampus.Assignment15.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
@@ -37,11 +43,13 @@ public class SelfCareController {
 
     private final SelfCareService selfCareService;
     private final ObjectMapper objectMapper;
+    private final UserService userService;
 
     @Autowired
-    public SelfCareController(SelfCareService selfCareService, ObjectMapper objectMapper) {
+    public SelfCareController(SelfCareService selfCareService, ObjectMapper objectMapper, UserService userService) {
         this.selfCareService = selfCareService;
         this.objectMapper = objectMapper;
+        this.userService = userService;
     }
 
     /**
@@ -49,7 +57,15 @@ public class SelfCareController {
      * Used by the frontend to record a new activity (Eat, Sleep, Shower).
      */
     @PostMapping("/record")
-    public ResponseEntity<Activity> recordActivity(@RequestBody Map<String, Object> activityData) {
+    public ResponseEntity<Activity> recordActivity(@RequestBody Map<String, Object> activityData, Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            System.out.println("Unauthorized request to /record - authentication is null or not authenticated");
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+
+        try {
+            User user = userService.findByUsername(authentication.getName());
+            System.out.println("Recording activity for user: " + user.getUsername());
         String type = (String) activityData.get("type");
         Activity activity = null;
         System.out.println("sleep has been recorded");
@@ -71,8 +87,13 @@ public class SelfCareController {
              activity.setTimestamp(Instant.now());
         }
 
-        Activity savedActivity = selfCareService.saveActivity(activity);
-        return new ResponseEntity<>(savedActivity, HttpStatus.CREATED);
+            Activity savedActivity = selfCareService.saveActivityWithTrack(user, activity);
+            return new ResponseEntity<>(savedActivity, HttpStatus.CREATED);
+        } catch (Exception e) {
+            System.err.println("Error in recordActivity: " + e.getMessage());
+            e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     /**
@@ -80,7 +101,15 @@ public class SelfCareController {
      * Used by the frontend to record a sleep activity with quality.
      */
     @PostMapping("/record/sleep")
-    public ResponseEntity<Sleep> recordSleep(@RequestBody Sleep sleep) {
+    public ResponseEntity<Sleep> recordSleep(@RequestBody Sleep sleep, Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            System.out.println("Unauthorized request to /record/sleep - authentication is null or not authenticated");
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+
+        try {
+            User user = userService.findByUsername(authentication.getName());
+            System.out.println("Recording sleep for user: " + user.getUsername());
         // Validate sleep quality - Jackson will reject invalid enum values during deserialization
         if (sleep.getQuality() == null) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
@@ -95,8 +124,13 @@ public class SelfCareController {
             sleep.setTimestamp(Instant.now());
         }
        
-        Sleep savedSleep = (Sleep) selfCareService.saveActivity(sleep);
-        return new ResponseEntity<>(savedSleep, HttpStatus.CREATED);
+            Sleep savedSleep = (Sleep) selfCareService.saveActivityWithTrack(user, sleep);
+            return new ResponseEntity<>(savedSleep, HttpStatus.CREATED);
+        } catch (Exception e) {
+            System.err.println("Error in recordSleep: " + e.getMessage());
+            e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
     
     /**
@@ -104,7 +138,15 @@ public class SelfCareController {
      * Used by the frontend to record a shower activity with rating and length.
      */
     @PostMapping("/record/shower")
-    public ResponseEntity<Shower> recordShower(@RequestBody Map<String, Object> showerData) {
+    public ResponseEntity<Shower> recordShower(@RequestBody Map<String, Object> showerData, Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            System.out.println("Unauthorized request to /record/shower - authentication is null or not authenticated");
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+
+        try {
+            User user = userService.findByUsername(authentication.getName());
+            System.out.println("Recording shower for user: " + user.getUsername());
         try {
             System.out.println("Received shower data: " + showerData);
             
@@ -132,7 +174,7 @@ public class SelfCareController {
             }
             
             System.out.println("About to save shower - Rating: " + shower.getRating() + ", Length: " + shower.getLengthInMinutes());
-            Shower savedShower = (Shower) selfCareService.saveActivity(shower);
+            Shower savedShower = (Shower) selfCareService.saveActivityWithTrack(user, shower);
             System.out.println("Shower saved successfully with ID: " + savedShower.getId());
             return new ResponseEntity<>(savedShower, HttpStatus.CREATED);
         } catch (Exception e) {
@@ -146,8 +188,15 @@ public class SelfCareController {
 
      
         @PostMapping("/record/eat")
-        public ResponseEntity<Eat> recordEat(@RequestBody Eat eat) {
+        public ResponseEntity<Eat> recordEat(@RequestBody Eat eat, Authentication authentication) {
+            if (authentication == null || !authentication.isAuthenticated()) {
+                System.out.println("Unauthorized request to /record/eat - authentication is null or not authenticated");
+                return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+            }
+
             try {
+                User user = userService.findByUsername(authentication.getName());
+                System.out.println("Recording eat for user: " + user.getUsername());
                 System.out.println("Received eat activity: " + eat);
                 System.out.println("Meal description: " + eat.getMealDescription());
                 
@@ -162,7 +211,7 @@ public class SelfCareController {
                     eat.setTimestamp(Instant.now());
                 }
                 
-                Eat savedEat = (Eat) selfCareService.saveActivity(eat);
+                Eat savedEat = (Eat) selfCareService.saveActivityWithTrack(user, eat);
                 System.out.println("Eat saved successfully with ID: " + savedEat.getId());
                 return new ResponseEntity<>(savedEat, HttpStatus.CREATED);
             } catch (Exception e) {
@@ -239,7 +288,10 @@ public class SelfCareController {
      * Updates relevant fields based on activity type and persists changes.
      */
     @PutMapping("/activity/{id}")
-    public ResponseEntity<Activity> updateActivity(@PathVariable Long id, @RequestBody Map<String, Object> activityData) {
+    public ResponseEntity<Activity> updateActivity(@PathVariable Long id, @RequestBody Map<String, Object> activityData, Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
         try {
             // Find existing activity
             Activity existingActivity = selfCareService.findActivityById(id);
@@ -273,7 +325,9 @@ public class SelfCareController {
                     return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
                 }
                 
+                User user = userService.findByUsername(authentication.getName());
                 Activity updated = selfCareService.saveActivity(eat);
+                selfCareService.updateTrackStatusForActivity(updated, user);
                 return new ResponseEntity<>(updated, HttpStatus.OK);
                 
             } else if (existingActivity instanceof Sleep) {
@@ -319,7 +373,9 @@ public class SelfCareController {
                     .atZone(ZoneId.systemDefault())
                     .toInstant());
                 
+                User user = userService.findByUsername(authentication.getName());
                 Activity updated = selfCareService.saveActivity(sleep);
+                selfCareService.updateTrackStatusForActivity(updated, user);
                 return new ResponseEntity<>(updated, HttpStatus.OK);
                 
             } else if (existingActivity instanceof Shower) {
@@ -369,7 +425,9 @@ public class SelfCareController {
                     return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
                 }
                 
+                User user = userService.findByUsername(authentication.getName());
                 Activity updated = selfCareService.saveActivity(shower);
+                selfCareService.updateTrackStatusForActivity(updated, user);
                 return new ResponseEntity<>(updated, HttpStatus.OK);
             }
             
@@ -458,6 +516,38 @@ public class SelfCareController {
                 .collect(java.util.stream.Collectors.toList());
         
         return new ResponseEntity<>(last24Hours, HttpStatus.OK);
+    }
+
+    /**
+     * Endpoint: GET /selfcare/track
+     * Used to fetch daily progress track entries for the authenticated user.
+     * Query param: date (optional, format: YYYY-MM-DD, defaults to today)
+     */
+    @GetMapping("/track")
+    public ResponseEntity<List<Track>> getTrack(@RequestParam(required = false) String date, Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+
+        try {
+            User user = userService.findByUsername(authentication.getName());
+            LocalDate activityDate;
+
+            if (date != null && !date.isEmpty()) {
+                // Parse the provided date
+                activityDate = LocalDate.parse(date, DateTimeFormatter.ISO_LOCAL_DATE);
+            } else {
+                // Default to today
+                activityDate = LocalDate.now();
+            }
+
+            List<Track> tracks = selfCareService.getTracksForUserAndDate(user, activityDate);
+            return new ResponseEntity<>(tracks, HttpStatus.OK);
+        } catch (Exception e) {
+            System.err.println("Error fetching track data: " + e.getMessage());
+            e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
     }
 }
 
