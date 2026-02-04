@@ -28,6 +28,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * REST Controller for Self-Care Activities.
@@ -147,7 +148,6 @@ public class SelfCareController {
         try {
             User user = userService.findByUsername(authentication.getName());
             System.out.println("Recording shower for user: " + user.getUsername());
-        try {
             System.out.println("Received shower data: " + showerData);
             
             // Convert Map to Shower object using ObjectMapper (same approach as /record endpoint)
@@ -511,9 +511,9 @@ public class SelfCareController {
         // Get all activities and filter to last 24 hours
         List<Activity> allActivities = selfCareService.findAllActivities();
         List<Activity> last24Hours = allActivities.stream()
-                .filter(activity -> activity.getTimestamp().isAfter(twentyFourHoursAgo))
+                .filter(activity -> activity != null && activity.getTimestamp() != null && activity.getTimestamp().isAfter(twentyFourHoursAgo))
                 .sorted((a, b) -> a.getTimestamp().compareTo(b.getTimestamp())) // Oldest first
-                .collect(java.util.stream.Collectors.toList());
+                .collect(Collectors.toList());
         
         return new ResponseEntity<>(last24Hours, HttpStatus.OK);
     }

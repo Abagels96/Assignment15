@@ -7,140 +7,140 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #FF7F7F; } /* UI background */
+        body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #FF7F7F 0%, #FB607F 100%); }
     </style>
 </head>
 <body class="h-screen flex flex-col p-4 overflow-hidden">
-    <div class="w-full bg-white shadow-xl rounded-2xl p-6 md:p-8 my-4 flex flex-col h-[calc(100vh-2rem)]">
+    <div class="w-full bg-white/95 backdrop-blur-sm shadow-2xl rounded-3xl p-6 md:p-8 my-4 flex flex-col h-[calc(100vh-2rem)]">
         <header class="relative mb-8 flex-shrink-0">
             <div class="flex items-center justify-between mb-6">
-                <h1 class="text-3xl md:text-4xl font-extrabold text-blue-800">Profile</h1>
+                <h1 class="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-[#E4717A] to-[#FB607F] bg-clip-text text-transparent">Profile</h1>
                 <div class="relative">
                     <button id="menu-toggle" class="text-3xl hover:scale-110 transition-transform focus:outline-none" title="Menu">
                         ☰
                     </button>
-                    <div id="dropdown-menu" class="hidden absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
-                        <a href="/track" class="block px-4 py-3 hover:bg-blue-50 transition flex items-center space-x-3">
+                    <div id="dropdown-menu" class="hidden absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-2xl border-2 border-[#FFE8ED] py-2 z-50">
+                        <a href="/track" class="block px-4 py-3 hover:bg-[#FFF5F7] transition flex items-center space-x-3">
                             <span class="text-2xl">📋</span>
                             <span class="text-gray-700 font-medium">Tracker</span>
                         </a>
-                        <a href="/progress" class="block px-4 py-3 hover:bg-blue-50 transition flex items-center space-x-3">
+                        <a href="/progress" class="block px-4 py-3 hover:bg-[#FFF5F7] transition flex items-center space-x-3">
                             <span class="text-2xl">📊</span>
                             <span class="text-gray-700 font-medium">Progress</span>
                         </a>
-                        <a href="/timeline" class="block px-4 py-3 hover:bg-blue-50 transition flex items-center space-x-3">
+                        <a href="/timeline" class="block px-4 py-3 hover:bg-[#FFF5F7] transition flex items-center space-x-3">
                             <span class="text-2xl">🗓️</span>
                             <span class="text-gray-700 font-medium">Timeline</span>
                         </a>
-                        <div class="border-t border-gray-200 my-1"></div>
-                        <a href="/logout" class="block px-4 py-3 hover:bg-blue-50 transition flex items-center space-x-3">
+                        <div class="border-t border-[#FFE8ED] my-1"></div>
+                        <a href="/logout" class="block px-4 py-3 hover:bg-[#FFF5F7] transition flex items-center space-x-3">
                             <span class="text-2xl">🚪</span>
                             <span class="text-gray-700 font-medium">Logout</span>
                         </a>
                     </div>
                 </div>
             </div>
-            <p class="text-gray-500 text-center">Your saved account details.</p>
+            <p class="text-gray-600 text-center font-medium">Your saved account details.</p>
         </header>
 
         <main class="flex-1 flex items-start justify-center overflow-auto">
             <div class="w-full max-w-2xl space-y-5">
                 <div id="profile-message" class="hidden rounded-lg border px-4 py-3 text-sm"></div>
 
-                <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+                <div class="rounded-2xl border-2 border-[#FFE8ED] bg-white p-6 shadow-lg">
                     <div class="flex items-center justify-end gap-2 mb-4">
-                        <button id="profile-edit-btn" class="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold transition">
+                        <button id="profile-edit-btn" class="px-5 py-2.5 rounded-xl bg-[#FB607F] hover:bg-[#E4717A] text-white font-bold transition shadow-lg">
                             Edit
                         </button>
-                        <button id="profile-cancel-btn" class="hidden px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 text-gray-800 font-semibold transition">
+                        <button id="profile-cancel-btn" class="hidden px-5 py-2.5 rounded-xl border-2 border-gray-300 hover:bg-gray-50 text-gray-800 font-bold transition">
                             Cancel
                         </button>
-                        <button id="profile-save-btn" class="hidden px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white font-semibold transition">
+                        <button id="profile-save-btn" class="hidden px-5 py-2.5 rounded-xl bg-[#FA8072] hover:bg-[#E4717A] text-white font-bold transition shadow-lg">
                             Save
                         </button>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div class="rounded-xl bg-blue-50 p-4">
-                            <div class="text-xs uppercase tracking-wide text-blue-700">Username</div>
+                        <div class="rounded-xl bg-[#FFF5F7] border-2 border-[#FFE8ED] p-4">
+                            <div class="text-xs uppercase tracking-wide text-[#E4717A] font-bold">Username</div>
                             <div id="profile-username" class="mt-1 text-lg font-semibold text-gray-900">—</div>
-                            <input id="profile-username-input" type="text" minlength="3" class="hidden mt-2 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition text-gray-900" />
+                            <input id="profile-username-input" type="text" minlength="3" class="hidden mt-2 w-full px-3 py-2 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-[#FB607F] focus:border-[#FB607F] outline-none transition text-gray-900" />
                         </div>
-                        <div class="rounded-xl bg-blue-50 p-4">
-                            <div class="text-xs uppercase tracking-wide text-blue-700">Display name</div>
+                        <div class="rounded-xl bg-[#FFF5F7] border-2 border-[#FFE8ED] p-4">
+                            <div class="text-xs uppercase tracking-wide text-[#E4717A] font-bold">Display name</div>
                             <div id="profile-displayName" class="mt-1 text-lg font-semibold text-gray-900">—</div>
-                            <input id="profile-displayName-input" type="text" class="hidden mt-2 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition text-gray-900" />
+                            <input id="profile-displayName-input" type="text" class="hidden mt-2 w-full px-3 py-2 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-[#FB607F] focus:border-[#FB607F] outline-none transition text-gray-900" />
                         </div>
-                        <div class="rounded-xl bg-blue-50 p-4">
-                            <div class="text-xs uppercase tracking-wide text-blue-700">Number of children</div>
+                        <div class="rounded-xl bg-[#FFF5F7] border-2 border-[#FFE8ED] p-4">
+                            <div class="text-xs uppercase tracking-wide text-[#E4717A] font-bold">Number of children</div>
                             <div id="profile-numChildren" class="mt-1 text-lg font-semibold text-gray-900">—</div>
-                            <input id="profile-numChildren-input" type="number" min="1" step="1" inputmode="numeric" class="hidden mt-2 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition text-gray-900" />
+                            <input id="profile-numChildren-input" type="number" min="1" step="1" inputmode="numeric" class="hidden mt-2 w-full px-3 py-2 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-[#FB607F] focus:border-[#FB607F] outline-none transition text-gray-900" />
                         </div>
-                        <div class="rounded-xl bg-blue-50 p-4">
-                            <div class="text-xs uppercase tracking-wide text-blue-700">Children’s names</div>
+                        <div class="rounded-xl bg-[#FFF5F7] border-2 border-[#FFE8ED] p-4">
+                            <div class="text-xs uppercase tracking-wide text-[#E4717A] font-bold">Children's names</div>
                             <div id="profile-childNames" class="mt-1 text-lg font-semibold text-gray-900">—</div>
-                            <input id="profile-childNames-input" type="text" class="hidden mt-2 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition text-gray-900" placeholder="e.g. Ava, Noah" />
+                            <input id="profile-childNames-input" type="text" class="hidden mt-2 w-full px-3 py-2 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-[#FB607F] focus:border-[#FB607F] outline-none transition text-gray-900" placeholder="e.g. Ava, Noah" />
                         </div>
-                        <div class="rounded-xl bg-blue-50 p-4 md:col-span-2">
-                            <div class="text-xs uppercase tracking-wide text-blue-700">Children’s ages</div>
+                        <div class="rounded-xl bg-[#FFF5F7] border-2 border-[#FFE8ED] p-4 md:col-span-2">
+                            <div class="text-xs uppercase tracking-wide text-[#E4717A] font-bold">Children's ages</div>
                             <div id="profile-childAges" class="mt-1 text-lg font-semibold text-gray-900">—</div>
-                            <input id="profile-childAges-input" type="text" class="hidden mt-2 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition text-gray-900" placeholder="e.g. 2, 5" />
+                            <input id="profile-childAges-input" type="text" class="hidden mt-2 w-full px-3 py-2 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-[#FB607F] focus:border-[#FB607F] outline-none transition text-gray-900" placeholder="e.g. 2, 5" />
                         </div>
                     </div>
                 </div>
 
-                <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+                <div class="rounded-2xl border-2 border-[#FFE8ED] bg-white p-6 shadow-lg">
                     <div class="flex items-center justify-between gap-3">
                         <div>
                             <div class="text-lg font-bold text-gray-900">Password</div>
                             <div class="text-sm text-gray-600">Change your password (requires your current password).</div>
                         </div>
-                        <button id="password-toggle-btn" class="px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 text-gray-800 font-semibold transition">
+                        <button id="password-toggle-btn" class="px-5 py-2.5 rounded-xl border-2 border-[#FFE8ED] hover:bg-[#FFF5F7] text-gray-800 font-bold transition">
                             Change password
                         </button>
                     </div>
 
                     <div id="password-form" class="hidden mt-5 grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="md:col-span-2">
-                            <label for="currentPassword" class="block text-sm font-medium text-gray-700 mb-2">Current password</label>
+                            <label for="currentPassword" class="block text-sm font-semibold text-gray-700 mb-2">Current password</label>
                             <input
                                 type="password"
                                 id="currentPassword"
                                 name="currentPassword"
                                 autocomplete="current-password"
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition text-gray-900"
+                                class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-[#FB607F] focus:border-[#FB607F] outline-none transition text-gray-900"
                                 placeholder="Enter your current password"
                             />
                         </div>
                         <div>
-                            <label for="newPassword" class="block text-sm font-medium text-gray-700 mb-2">New password</label>
+                            <label for="newPassword" class="block text-sm font-semibold text-gray-700 mb-2">New password</label>
                             <input
                                 type="password"
                                 id="newPassword"
                                 name="newPassword"
                                 autocomplete="new-password"
                                 minlength="8"
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition text-gray-900"
+                                class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-[#FB607F] focus:border-[#FB607F] outline-none transition text-gray-900"
                                 placeholder="At least 8 characters"
                             />
                         </div>
                         <div>
-                            <label for="confirmNewPassword" class="block text-sm font-medium text-gray-700 mb-2">Confirm new password</label>
+                            <label for="confirmNewPassword" class="block text-sm font-semibold text-gray-700 mb-2">Confirm new password</label>
                             <input
                                 type="password"
                                 id="confirmNewPassword"
                                 name="confirmNewPassword"
                                 autocomplete="new-password"
                                 minlength="8"
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition text-gray-900"
+                                class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-[#FB607F] focus:border-[#FB607F] outline-none transition text-gray-900"
                                 placeholder="Re-enter new password"
                             />
                         </div>
                         <div class="md:col-span-2 flex items-center justify-end gap-2">
-                            <button id="password-cancel-btn" class="px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 text-gray-800 font-semibold transition">
+                            <button id="password-cancel-btn" class="px-5 py-2.5 rounded-xl border-2 border-gray-300 hover:bg-gray-50 text-gray-800 font-bold transition">
                                 Cancel
                             </button>
-                            <button id="password-save-btn" class="px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white font-semibold transition">
+                            <button id="password-save-btn" class="px-5 py-2.5 rounded-xl bg-[#FA8072] hover:bg-[#E4717A] text-white font-bold transition shadow-lg">
                                 Update password
                             </button>
                         </div>

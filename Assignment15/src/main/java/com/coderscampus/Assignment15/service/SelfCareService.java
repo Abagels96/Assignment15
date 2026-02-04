@@ -32,9 +32,6 @@ public class SelfCareService {
     @Autowired
     private TrackRepository trackRepository;
 
-    @Autowired
-    private UserService userService;
-
     public Activity saveActivity(Activity activity) {
         return activityRepository.save(activity);
     }
@@ -187,20 +184,20 @@ public class SelfCareService {
                 status = TrackStatus.DONE;
             }
 
-            // Check if track entry already exists for this activity
-            Track existingTrack = trackRepository.findByActivityId(savedActivity.getId()).orElse(null);
+            // Check if track entry already exists for this activity using Hibernate directly
+            Track existingTrack = trackRepository.findTrackByActivityId(savedActivity.getId()).orElse(null);
 
             if (existingTrack != null) {
-                // Update existing track
+                // Update existing track using Hibernate directly
                 existingTrack.setActivityDate(activityDate);
                 existingTrack.setStatus(status);
-                trackRepository.save(existingTrack);
-                System.out.println("Updated track entry for activity ID: " + savedActivity.getId());
+                trackRepository.saveTrack(existingTrack);
+                System.out.println("Updated track entry for activity ID: " + savedActivity.getId() + " using Hibernate");
             } else {
-                // Create new track entry
+                // Create new track entry using Hibernate directly
                 Track track = new Track(user, savedActivity, activityDate, status);
-                trackRepository.save(track);
-                System.out.println("Created track entry for activity ID: " + savedActivity.getId() + ", user: " + user.getUsername() + ", status: " + status);
+                trackRepository.saveTrack(track);
+                System.out.println("Created track entry for activity ID: " + savedActivity.getId() + ", user: " + user.getUsername() + ", status: " + status + " using Hibernate");
             }
         } catch (Exception e) {
             System.err.println("Error creating/updating track entry for activity ID: " + savedActivity.getId());
@@ -214,10 +211,11 @@ public class SelfCareService {
     /**
      * Update track status for an activity (e.g., when sleep end time is added)
      * Creates a track entry if it doesn't exist (for backward compatibility)
+     * Uses Hibernate directly via custom repository
      */
     @Transactional
     public void updateTrackStatusForActivity(Activity activity, User user) {
-        Track track = trackRepository.findByActivityId(activity.getId()).orElse(null);
+        Track track = trackRepository.findTrackByActivityId(activity.getId()).orElse(null);
         
         if (track == null) {
             // Create track entry if it doesn't exist (for backward compatibility)
@@ -252,14 +250,15 @@ public class SelfCareService {
             track.setActivityDate(activityDate);
         }
 
-        trackRepository.save(track);
+        trackRepository.saveTrack(track);
     }
 
     /**
      * Get all track entries for a user on a specific date
+     * Uses Hibernate directly via custom repository
      */
     public List<Track> getTracksForUserAndDate(User user, LocalDate date) {
-        return trackRepository.findByUserAndActivityDate(user, date);
+        return trackRepository.findTracksByUserAndDate(user, date);
     }
 }
 

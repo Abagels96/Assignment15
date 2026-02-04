@@ -11,51 +11,51 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #FF7F7F; /* UI background */
+            background: linear-gradient(135deg, #FF7F7F 0%, #FB607F 100%);
         }
     </style>
 </head>
 <body class="h-screen flex flex-col p-4 overflow-hidden">
-    <div class="w-full bg-white shadow-xl rounded-2xl p-6 md:p-8 my-4 flex flex-col h-[calc(100vh-2rem)]">
+    <div class="w-full bg-white/95 backdrop-blur-sm shadow-2xl rounded-3xl p-6 md:p-8 my-4 flex flex-col h-[calc(100vh-2rem)]">
         <!-- Header with Dropdown Menu -->
         <header class="relative mb-8 flex-shrink-0">
             <div class="flex items-center justify-between mb-6">
-                <h1 class="text-3xl md:text-4xl font-extrabold text-blue-800">Login</h1>
+                <h1 class="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-[#E4717A] to-[#FB607F] bg-clip-text text-transparent">Login</h1>
                 <!-- Dropdown Menu -->
                 <div class="relative">
                     <button id="menu-toggle" class="text-3xl hover:scale-110 transition-transform focus:outline-none" title="Menu">
                         ☰
                     </button>
                     <!-- Dropdown Content -->
-                    <div id="dropdown-menu" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
-                        <a href="/track" class="block px-4 py-3 hover:bg-blue-50 transition flex items-center space-x-3">
+                    <div id="dropdown-menu" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-2xl border-2 border-[#FFE8ED] py-2 z-50">
+                        <a href="/track" class="block px-4 py-3 hover:bg-[#FFF5F7] transition flex items-center space-x-3">
                             <span class="text-2xl">📋</span>
                             <span class="text-gray-700 font-medium">Tracker</span>
                         </a>
-                        <a href="/progress" class="block px-4 py-3 hover:bg-blue-50 transition flex items-center space-x-3">
+                        <a href="/progress" class="block px-4 py-3 hover:bg-[#FFF5F7] transition flex items-center space-x-3">
                             <span class="text-2xl">📊</span>
                             <span class="text-gray-700 font-medium">Progress</span>
                         </a>
-                        <a href="/profile" class="block px-4 py-3 hover:bg-blue-50 transition flex items-center space-x-3">
+                        <a href="/profile" class="block px-4 py-3 hover:bg-[#FFF5F7] transition flex items-center space-x-3">
                             <span class="text-2xl">👤</span>
                             <span class="text-gray-700 font-medium">Profile</span>
                         </a>
-                        <a href="/register" class="block px-4 py-3 hover:bg-blue-50 transition flex items-center space-x-3">
+                        <a href="/register" class="block px-4 py-3 hover:bg-[#FFF5F7] transition flex items-center space-x-3">
                             <span class="text-2xl">✨</span>
                             <span class="text-gray-700 font-medium">Register</span>
                         </a>
-                        <a href="#" class="block px-4 py-3 hover:bg-blue-50 transition flex items-center space-x-3 opacity-75" title="Coming Soon">
+                        <a href="#" class="block px-4 py-3 hover:bg-[#FFF5F7] transition flex items-center space-x-3 opacity-75" title="Coming Soon">
                             <span class="text-2xl">⏳</span>
                             <span class="text-gray-700 font-medium">In Progress</span>
                         </a>
-                        <a href="#" class="block px-4 py-3 hover:bg-blue-50 transition flex items-center space-x-3 opacity-75" title="Coming Soon">
+                        <a href="#" class="block px-4 py-3 hover:bg-[#FFF5F7] transition flex items-center space-x-3 opacity-75" title="Coming Soon">
                             <span class="text-2xl">👶</span>
                             <span class="text-gray-700 font-medium">Baby Tracker</span>
                         </a>
                     </div>
                 </div>
             </div>
-            <p class="text-gray-500 text-center">Welcome back! Please sign in to continue.</p>
+            <p class="text-gray-600 text-center font-medium">Welcome back! Please sign in to continue.</p>
         </header>
 
         <!-- Login Form -->
@@ -64,7 +64,7 @@
             
             <!-- Username Field -->
             <div>
-                <label for="username" class="block text-sm font-medium text-gray-700 mb-2">
+                <label for="username" class="block text-sm font-semibold text-gray-700 mb-2">
                     Username
                 </label>
                 <input 
@@ -72,14 +72,14 @@
                     id="username" 
                     name="username" 
                     required
-                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition text-gray-900"
+                    class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-[#FB607F] focus:border-[#FB607F] outline-none transition text-gray-900"
                     placeholder="Enter your username"
                 />
             </div>
 
             <!-- Password Field -->
             <div>
-                <label for="password" class="block text-sm font-medium text-gray-700 mb-2">
+                <label for="password" class="block text-sm font-semibold text-gray-700 mb-2">
                     Password
                 </label>
                 <div class="relative">
@@ -88,7 +88,7 @@
                         id="password" 
                         name="password" 
                         required
-                        class="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition text-gray-900"
+                        class="w-full px-4 py-3 pr-12 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-[#FB607F] focus:border-[#FB607F] outline-none transition text-gray-900"
                         placeholder="Enter your password"
                     />
                     <button 
@@ -105,14 +105,14 @@
             <!-- Login Button -->
             <button 
                 type="submit"
-                class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition transform hover:scale-[1.02] active:scale-[1.0] shadow-lg"
+                class="w-full bg-[#FB607F] hover:bg-[#E4717A] text-white font-bold py-3 px-4 rounded-xl transition transform hover:scale-[1.03] active:scale-[1.0] shadow-xl"
             >
                 Sign In
             </button>
             
             <p class="text-sm text-gray-600 text-center">
                 New here?
-                <a href="/register" class="text-blue-700 hover:underline font-medium">Create an account</a>
+                <a href="/register" class="text-[#E4717A] hover:text-[#D36C6C] hover:underline font-semibold">Create an account</a>
             </p>
             </form>
         </main>
