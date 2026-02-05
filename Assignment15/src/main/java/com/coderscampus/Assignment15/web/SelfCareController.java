@@ -12,6 +12,7 @@ import com.coderscampus.Assignment15.domain.Track;
 import com.coderscampus.Assignment15.domain.User;
 import com.coderscampus.Assignment15.service.SelfCareService;
 import com.coderscampus.Assignment15.service.UserService;
+import com.coderscampus.Assignment15.service.DailyGoalService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -45,12 +46,14 @@ public class SelfCareController {
     private final SelfCareService selfCareService;
     private final ObjectMapper objectMapper;
     private final UserService userService;
+    private final DailyGoalService dailyGoalService;
 
     @Autowired
-    public SelfCareController(SelfCareService selfCareService, ObjectMapper objectMapper, UserService userService) {
+    public SelfCareController(SelfCareService selfCareService, ObjectMapper objectMapper, UserService userService, DailyGoalService dailyGoalService) {
         this.selfCareService = selfCareService;
         this.objectMapper = objectMapper;
         this.userService = userService;
+        this.dailyGoalService = dailyGoalService;
     }
 
     /**
@@ -547,6 +550,52 @@ public class SelfCareController {
             System.err.println("Error fetching track data: " + e.getMessage());
             e.printStackTrace();
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    /**
+     * Endpoint: GET /selfcare/goals/daily
+     * Returns daily goals for the authenticated user
+     */
+    @GetMapping("/goals/daily")
+    public ResponseEntity<Map<String, Integer>> getDailyGoals(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+
+        try {
+            User user = userService.findByUsername(authentication.getName());
+            Map<String, Integer> goals = dailyGoalService.getDailyGoals(user);
+            return new ResponseEntity<>(goals, HttpStatus.OK);
+        } catch (Exception e) {
+            System.err.println("Error fetching daily goals: " + e.getMessage());
+            e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * Endpoint: PUT /selfcare/goals/daily
+     * Updates daily goals for the authenticated user
+     * Body: {"EAT": 3, "SLEEP": 1, "SHOWER": 1}
+     */
+    @PutMapping("/goals/daily")
+    public ResponseEntity<Map<String, Integer>> updateDailyGoals(@RequestBody Map<String, Integer> goalsMap, Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+
+        try {
+            User user = userService.findByUsername(authentication.getName());
+            dailyGoalService.updateDailyGoals(user, goalsMap);
+            Map<String, Integer> updatedGoals = dailyGoalService.getDailyGoals(user);
+            return new ResponseEntity<>(updatedGoals, HttpStatus.OK);
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            System.err.println("Error updating daily goals: " + e.getMessage());
+            e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 }

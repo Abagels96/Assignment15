@@ -9,38 +9,78 @@ async function loadSummary() {
     chartContainer.innerHTML = ''; // Clear old chart
 
     try {
-        const response = await fetch(`${API_BASE_URL}/summary`);
-        if (!response.ok) throw new Error('Network response was not ok');
-        const summary = await response.json();
+        // Fetch summary first
+        const summaryResponse = await fetch(`${API_BASE_URL}/summary`, { credentials: 'include' });
         
-        renderSummaryCards(summary.last24Hours);
+        if (!summaryResponse.ok) {
+            if (summaryResponse.status === 401) {
+                cardContainer.innerHTML = '<p class="text-center text-red-500 col-span-3">Please log in to view your progress.</p>';
+                return;
+            }
+            const errorText = await summaryResponse.text();
+            throw new Error(`Failed to load summary (${summaryResponse.status}): ${errorText}`);
+        }
+        
+        const summary = await summaryResponse.json();
+        console.log('Summary loaded:', summary);
+        
+        // Try to fetch goals (requires auth, but don't fail if it doesn't work)
+        let goals = { EAT: 3, SLEEP: 1, SHOWER: 1 }; // Default goals
+        try {
+            const goalsResponse = await fetch(`${API_BASE_URL}/goals/daily`, { credentials: 'include' });
+            if (goalsResponse.ok) {
+                goals = await goalsResponse.json();
+                console.log('Goals loaded:', goals);
+            } else {
+                console.warn('Could not load goals, using defaults. Status:', goalsResponse.status);
+            }
+        } catch (goalsError) {
+            console.warn('Error loading goals, using defaults:', goalsError);
+            // Continue with default goals
+        }
+        
+        renderSummaryCards(summary.last24Hours, goals);
         renderChart(summary.last7Days);
 
     } catch (error) {
         console.error('Failed to load summary:', error);
-        cardContainer.innerHTML = '<p class="text-center text-red-500 col-span-3">Failed to load summary.</p>';
+        cardContainer.innerHTML = `<p class="text-center text-red-500 col-span-3">Failed to load summary: ${error.message}</p>`;
     }
 }
 
-function renderSummaryCards(data24h) {
+function renderSummaryCards(data24h, goals) {
     const container = document.getElementById('summary-cards');
     container.innerHTML = ''; // Clear loading
 
     const icons = { EAT: '🍎', SLEEP: '🛌', SHOWER: '🚿' };
     const colors = {
-        EAT: 'text-[#FA8072]',
-        SLEEP: 'text-[#E37383]',
-        SHOWER: 'text-[#FF6F61]'
+        EAT: { text: 'text-[#FA8072]', bg: 'bg-[#FA8072]' },
+        SLEEP: { text: 'text-[#E37383]', bg: 'bg-[#E37383]' },
+        SHOWER: { text: 'text-[#FF6F61]', bg: 'bg-[#FF6F61]' }
     };
 
     ['EAT', 'SLEEP', 'SHOWER'].forEach(type => {
         const count = data24h[type] || 0;
+        const goal = goals[type] || 1; // Default to 1 if goal not set
+        const progressPercent = Math.min(Math.round((count / goal) * 100), 100);
+        const isComplete = count >= goal;
+        
         const card = document.createElement('div');
-        card.className = 'p-4 bg-[#FFF5F7] border-2 border-[#FFE8ED] rounded-xl text-center shadow-lg';
+        card.className = 'p-4 bg-[#FFF5F7] border-2 border-[#FFE8ED] rounded-xl shadow-lg';
+        
         card.innerHTML = `
-            <span class="text-4xl">${icons[type]}</span>
-            <p class="text-3xl font-bold ${colors[type]}">${count}</p>
-            <p class="text-sm text-gray-500 font-medium">${type}</p>
+            <div class="text-center mb-3">
+                <span class="text-4xl">${icons[type]}</span>
+                <p class="text-sm text-gray-500 font-medium mt-1">${type}</p>
+            </div>
+            <div class="text-center mb-2">
+                <p class="text-3xl font-bold ${colors[type].text}">${count} / ${goal}</p>
+                <p class="text-xs text-gray-500 mt-1">${progressPercent}% of goal</p>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-2">
+                <div class="${colors[type].bg} h-2 rounded-full transition-all duration-500 ${isComplete ? 'bg-green-500' : ''}" 
+                     style="width: ${progressPercent}%"></div>
+            </div>
         `;
         container.appendChild(card);
     });
@@ -429,49 +469,71 @@ function renderTrackProgress(tracks, date) {
         SHOWER: { bg: 'bg-sky-50', border: 'border-sky-200', text: 'text-sky-700' }
     };
     
-    ['EAT', 'SLEEP', 'SHOWER'].forEach(type => {
-        const typeTracks = tracksByType[type] || [];
-        const doneCount = typeTracks.filter(t => t.status === 'DONE').length;
-        const notStartedCount = typeTracks.filter(t => t.status === 'NOT_STARTED').length;
-        const totalCount = typeTracks.length;
-        
-        const card = document.createElement('div');
-        card.className = `p-4 rounded-lg border-2 ${colors[type].bg} ${colors[type].border} mb-4`;
-        
-        const progressPercent = totalCount > 0 ? Math.round((doneCount / totalCount) * 100) : 0;
-        
-        card.innerHTML = `
-            <div class="flex items-center justify-between mb-3">
-                <div class="flex items-center gap-3">
-                    <span class="text-3xl">${icons[type]}</span>
-                    <div>
-                        <h4 class="font-bold ${colors[type].text} text-lg">${type}</h4>
-                        <p class="text-sm text-gray-600">${totalCount} activity${totalCount !== 1 ? 'ies' : ''}</p>
+    // Fetch goals for comparison
+    fetch(`${API_BASE_URL}/goals/daily`, { credentials: 'include' })
+        .then(response => response.json())
+        .then(goals => {
+            ['EAT', 'SLEEP', 'SHOWER'].forEach(type => {
+                const typeTracks = tracksByType[type] || [];
+                const doneCount = typeTracks.filter(t => t.status === 'DONE').length;
+                const goal = goals[type] || 1; // Default to 1 if goal not set
+                const progressPercent = Math.min(Math.round((doneCount / goal) * 100), 100);
+                const isComplete = doneCount >= goal;
+                
+                const card = document.createElement('div');
+                card.className = `p-4 rounded-lg border-2 ${colors[type].bg} ${colors[type].border} mb-4`;
+                
+                card.innerHTML = `
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center gap-3">
+                            <span class="text-3xl">${icons[type]}</span>
+                            <div>
+                                <h4 class="font-bold ${colors[type].text} text-lg">${type}</h4>
+                                <p class="text-sm text-gray-600">${doneCount} / ${goal} completed</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-2xl font-bold ${colors[type].text}">${progressPercent}%</p>
+                            <p class="text-xs text-gray-500">of goal</p>
+                        </div>
                     </div>
-                </div>
-                <div class="text-right">
-                    <p class="text-2xl font-bold ${colors[type].text}">${progressPercent}%</p>
-                    <p class="text-xs text-gray-500">Complete</p>
-                </div>
-            </div>
-            <div class="w-full bg-gray-200 rounded-full h-3 mb-2">
-                <div class="${colors[type].bg.replace('50', '400')} h-3 rounded-full transition-all duration-500" 
-                     style="width: ${progressPercent}%"></div>
-            </div>
-            <div class="flex gap-4 text-sm">
-                <span class="flex items-center gap-1">
-                    <span class="w-3 h-3 rounded-full bg-green-500"></span>
-                    <span class="text-gray-700">Done: ${doneCount}</span>
-                </span>
-                <span class="flex items-center gap-1">
-                    <span class="w-3 h-3 rounded-full bg-yellow-500"></span>
-                    <span class="text-gray-700">Not Started: ${notStartedCount}</span>
-                </span>
-            </div>
-        `;
-        
-        container.appendChild(card);
-    });
+                    <div class="w-full bg-gray-200 rounded-full h-3 mb-2">
+                        <div class="${isComplete ? 'bg-green-500' : colors[type].bg.replace('50', '400')} h-3 rounded-full transition-all duration-500" 
+                             style="width: ${progressPercent}%"></div>
+                    </div>
+                    <div class="text-sm text-gray-700">
+                        <span class="font-semibold">Goal:</span> ${goal} ${type.toLowerCase()}${goal === 1 ? '' : 's'} per day
+                    </div>
+                `;
+                
+                container.appendChild(card);
+            });
+        })
+        .catch(error => {
+            console.error('Failed to load goals:', error);
+            // Fallback: show without goals
+            ['EAT', 'SLEEP', 'SHOWER'].forEach(type => {
+                const typeTracks = tracksByType[type] || [];
+                const doneCount = typeTracks.filter(t => t.status === 'DONE').length;
+                
+                const card = document.createElement('div');
+                card.className = `p-4 rounded-lg border-2 ${colors[type].bg} ${colors[type].border} mb-4`;
+                
+                card.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <span class="text-3xl">${icons[type]}</span>
+                            <div>
+                                <h4 class="font-bold ${colors[type].text} text-lg">${type}</h4>
+                                <p class="text-sm text-gray-600">${doneCount} completed</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                container.appendChild(card);
+            });
+        });
 }
 
 // --- Initial Load ---
