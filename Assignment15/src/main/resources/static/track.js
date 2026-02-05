@@ -1,5 +1,6 @@
 // --- API Configuration ---
 const API_BASE_URL = 'http://localhost:8080/selfcare';
+const TASKS_API_URL = 'http://localhost:8080/tasks';
 
 const type= document.getElementById("action-buttons")
 
@@ -30,6 +31,153 @@ function formatTimestamp(isoString) {
         minute: '2-digit', 
         hour12: true
     });
+}
+
+// --- Task Completion ---
+function getTodayDateString() {
+    const now = new Date();
+    return now.toISOString().split('T')[0];
+}
+
+async function loadTasksAndCompletions() {
+    try {
+        const [tasks, completions] = await Promise.all([
+            loadTasks(),
+            loadTaskCompletions(getTodayDateString())
+        ]);
+        renderTaskList(tasks, completions);
+    } catch (error) {
+        console.error('Failed to load tasks or completions:', error);
+        const taskList = document.getElementById('task-list');
+        if (taskList) {
+            taskList.innerHTML = '<p class="text-center text-red-500">Failed to load tasks.</p>';
+        }
+    }
+}
+
+async function loadTasks() {
+    const response = await fetch(TASKS_API_URL, {
+        credentials: 'include'
+    });
+    if (!response.ok) {
+        throw new Error(`Failed to load tasks: ${response.status}`);
+    }
+    return response.json();
+}
+
+async function loadTaskCompletions(date) {
+    const response = await fetch(`${TASKS_API_URL}/completion?date=${date}`, {
+        credentials: 'include'
+    });
+    if (!response.ok) {
+        throw new Error(`Failed to load completions: ${response.status}`);
+    }
+    return response.json();
+}
+
+function renderTaskList(tasks, completions) {
+    const taskList = document.getElementById('task-list');
+    const loading = document.getElementById('task-loading');
+
+    if (loading) {
+        loading.remove();
+    }
+    if (!taskList) return;
+
+    taskList.innerHTML = '';
+    if (!tasks || tasks.length === 0) {
+        taskList.innerHTML = '<p class="text-center text-gray-500">No tasks yet. Add one above.</p>';
+        return;
+    }
+
+    const completionMap = new Map();
+    (completions || []).forEach(c => {
+        completionMap.set(c.taskId, c.completed === true);
+    });
+
+    tasks.forEach(task => {
+        const isCompleted = completionMap.get(task.taskId) === true;
+
+        const item = document.createElement('div');
+        item.className = 'flex items-center justify-between p-3 border rounded-xl bg-gray-50';
+        item.innerHTML = `
+            <div>
+                <p class="font-semibold text-gray-800">${task.name}</p>
+                <p class="text-xs text-gray-500">${task.frequency || 'DAILY'}</p>
+            </div>
+            <label class="flex items-center gap-2 text-sm text-gray-700">
+                <input type="checkbox" class="h-4 w-4" ${isCompleted ? 'checked' : ''} data-task-id="${task.taskId}">
+                Done
+            </label>
+        `;
+
+        const checkbox = item.querySelector('input[type="checkbox"]');
+        checkbox.addEventListener('change', async (e) => {
+            const checked = e.target.checked;
+            const taskId = e.target.getAttribute('data-task-id');
+            try {
+                await upsertTaskCompletion(taskId, checked);
+            } catch (error) {
+                console.error('Failed to update completion:', error);
+                e.target.checked = !checked;
+                alert('Failed to update task completion.');
+            }
+        });
+
+        taskList.appendChild(item);
+    });
+}
+
+async function createTask() {
+    const nameInput = document.getElementById('task-name');
+    const frequencySelect = document.getElementById('task-frequency');
+    if (!nameInput || !frequencySelect) return;
+
+    const name = nameInput.value.trim();
+    const frequency = frequencySelect.value;
+    if (!name) {
+        alert('Please enter a task name.');
+        return;
+    }
+
+    try {
+        const response = await fetch(TASKS_API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ name, frequency })
+        });
+
+        if (!response.ok) {
+            throw new Error(`Failed to create task: ${response.status}`);
+        }
+
+        nameInput.value = '';
+        await loadTasksAndCompletions();
+    } catch (error) {
+        console.error('Failed to create task:', error);
+        alert('Failed to create task. Please try again.');
+    }
+}
+
+async function upsertTaskCompletion(taskId, completed) {
+    const payload = {
+        completed: completed,
+        completionDate: getTodayDateString()
+    };
+
+    const response = await fetch(`${TASKS_API_URL}/${taskId}/completion`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) {
+        throw new Error(`Failed to update completion: ${response.status}`);
+    }
+
+    return response.json();
 }
 
 // --- Tracker Page: History ---
@@ -183,7 +331,9 @@ async function loadHistory() {
     
     loading.style.display = 'block';
     try {
-        const response = await fetch(`${API_BASE_URL}/history`);
+        const response = await fetch(`${API_BASE_URL}/history`, {
+            credentials: 'include'
+        });
         if (!response.ok) throw new Error('Network response was not ok');
         const history = await response.json();
         loading.style.display = 'none';
@@ -231,6 +381,7 @@ async function recordActivity(type) {
         const response = await fetch(`${API_BASE_URL}/record`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
             body: JSON.stringify(newActivity)
         });
 
@@ -388,6 +539,7 @@ async function submitSleep() {
         const response = await fetch(`${API_BASE_URL}/record/sleep`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
             body: JSON.stringify(sleepActivity)
         });
 
@@ -436,6 +588,7 @@ async function submitShower() {
         const response = await fetch(`${API_BASE_URL}/record/shower`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
             body: JSON.stringify(showerActivity)
         });
 
@@ -486,6 +639,7 @@ async function submitEat() {
         const response = await fetch(`${API_BASE_URL}/record/eat`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
             body: JSON.stringify(eatActivity)
         });
 
@@ -512,7 +666,8 @@ function cancelClear() {
 async function clearHistoryConfirmed() {
     try {
          const response = await fetch(`${API_BASE_URL}/history/clear`, {
-            method: 'DELETE'
+            method: 'DELETE',
+            credentials: 'include'
          });
          if (!response.ok) throw new Error('Failed to clear history');
          
@@ -561,7 +716,8 @@ async function deleteActivity(id, activityType) {
     
     try {
         const response = await fetch(`${API_BASE_URL}/activity/${id}`, {
-            method: 'DELETE'
+            method: 'DELETE',
+            credentials: 'include'
         });
         
         if (!response.ok) throw new Error(`Failed to delete ${activityName} activity`);
@@ -580,7 +736,9 @@ let currentEditingActivity = null;
 function openEditModal(activityId) {
     // Find the activity in the history list
     // We need to load it from the server since we don't have all activities in memory
-    fetch(`${API_BASE_URL}/history`)
+    fetch(`${API_BASE_URL}/history`, {
+        credentials: 'include'
+    })
         .then(response => response.json())
         .then(activities => {
             const activity = activities.find(a => a.id === activityId);
@@ -821,6 +979,7 @@ async function saveActivityEdit() {
         const response = await fetch(`${API_BASE_URL}/activity/${activity.id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
             body: JSON.stringify(payload)
         });
         
@@ -850,5 +1009,6 @@ document.addEventListener('click', (e) => {
 // --- Initial Load ---
 document.addEventListener('DOMContentLoaded', () => {
     loadHistory(); // Load history on page load
+    loadTasksAndCompletions(); // Load tasks and daily completions
 });
 

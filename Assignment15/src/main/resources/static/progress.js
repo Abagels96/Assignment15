@@ -9,38 +9,78 @@ async function loadSummary() {
     chartContainer.innerHTML = ''; // Clear old chart
 
     try {
-        const response = await fetch(`${API_BASE_URL}/summary`);
-        if (!response.ok) throw new Error('Network response was not ok');
-        const summary = await response.json();
+        // Fetch summary first
+        const summaryResponse = await fetch(`${API_BASE_URL}/summary`, { credentials: 'include' });
         
-        renderSummaryCards(summary.last24Hours);
+        if (!summaryResponse.ok) {
+            if (summaryResponse.status === 401) {
+                cardContainer.innerHTML = '<p class="text-center text-red-500 col-span-3">Please log in to view your progress.</p>';
+                return;
+            }
+            const errorText = await summaryResponse.text();
+            throw new Error(`Failed to load summary (${summaryResponse.status}): ${errorText}`);
+        }
+        
+        const summary = await summaryResponse.json();
+        console.log('Summary loaded:', summary);
+        
+        // Try to fetch goals (requires auth, but don't fail if it doesn't work)
+        let goals = { EAT: 3, SLEEP: 1, SHOWER: 1 }; // Default goals
+        try {
+            const goalsResponse = await fetch(`${API_BASE_URL}/goals/daily`, { credentials: 'include' });
+            if (goalsResponse.ok) {
+                goals = await goalsResponse.json();
+                console.log('Goals loaded:', goals);
+            } else {
+                console.warn('Could not load goals, using defaults. Status:', goalsResponse.status);
+            }
+        } catch (goalsError) {
+            console.warn('Error loading goals, using defaults:', goalsError);
+            // Continue with default goals
+        }
+        
+        renderSummaryCards(summary.last24Hours, goals);
         renderChart(summary.last7Days);
 
     } catch (error) {
         console.error('Failed to load summary:', error);
-        cardContainer.innerHTML = '<p class="text-center text-red-500 col-span-3">Failed to load summary.</p>';
+        cardContainer.innerHTML = `<p class="text-center text-red-500 col-span-3">Failed to load summary: ${error.message}</p>`;
     }
 }
 
-function renderSummaryCards(data24h) {
+function renderSummaryCards(data24h, goals) {
     const container = document.getElementById('summary-cards');
     container.innerHTML = ''; // Clear loading
 
     const icons = { EAT: '🍎', SLEEP: '🛌', SHOWER: '🚿' };
     const colors = {
-        EAT: 'text-green-600',
-        SLEEP: 'text-indigo-600',
-        SHOWER: 'text-sky-600'
+        EAT: { text: 'text-[#FA8072]', bg: 'bg-[#FA8072]' },
+        SLEEP: { text: 'text-[#E37383]', bg: 'bg-[#E37383]' },
+        SHOWER: { text: 'text-[#FF6F61]', bg: 'bg-[#FF6F61]' }
     };
 
     ['EAT', 'SLEEP', 'SHOWER'].forEach(type => {
         const count = data24h[type] || 0;
+        const goal = goals[type] || 1; // Default to 1 if goal not set
+        const progressPercent = Math.min(Math.round((count / goal) * 100), 100);
+        const isComplete = count >= goal;
+        
         const card = document.createElement('div');
-        card.className = 'p-4 bg-gray-50 rounded-lg text-center shadow-sm';
+        card.className = 'p-4 bg-[#FFF5F7] border-2 border-[#FFE8ED] rounded-xl shadow-lg';
+        
         card.innerHTML = `
-            <span class="text-4xl">${icons[type]}</span>
-            <p class="text-3xl font-bold ${colors[type]}">${count}</p>
-            <p class="text-sm text-gray-500 font-medium">${type}</p>
+            <div class="text-center mb-3">
+                <span class="text-4xl">${icons[type]}</span>
+                <p class="text-sm text-gray-500 font-medium mt-1">${type}</p>
+            </div>
+            <div class="text-center mb-2">
+                <p class="text-3xl font-bold ${colors[type].text}">${count} / ${goal}</p>
+                <p class="text-xs text-gray-500 mt-1">${progressPercent}% of goal</p>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-2">
+                <div class="${colors[type].bg} h-2 rounded-full transition-all duration-500 ${isComplete ? 'bg-green-500' : ''}" 
+                     style="width: ${progressPercent}%"></div>
+            </div>
         `;
         container.appendChild(card);
     });
@@ -48,9 +88,9 @@ function renderSummaryCards(data24h) {
 
 function renderChart(data7d) {
     const chartData = [
-        { type: 'Eat', count: data7d.EAT || 0, color: '#10b981' }, // green-600
-        { type: 'Sleep', count: data7d.SLEEP || 0, color: '#6366f1' }, // indigo-500
-        { type: 'Shower', count: data7d.SHOWER || 0, color: '#0ea5e9' } // sky-500
+        { type: 'Eat', count: data7d.EAT || 0, color: '#FA8072' }, // salmon
+        { type: 'Sleep', count: data7d.SLEEP || 0, color: '#E37383' }, // rose
+        { type: 'Shower', count: data7d.SHOWER || 0, color: '#FF6F61' } // coral
     ];
 
     const container = document.getElementById('chart-container');
@@ -334,9 +374,178 @@ function renderShowerAverageDisplay(data) {
     container.appendChild(card);
 }
 
+// --- Daily Track Progress ---
+async function loadTrackProgress() {
+    const container = document.getElementById('track-container');
+    const loading = document.getElementById('track-loading');
+    const dateInput = document.getElementById('track-date');
+    
+    // Get selected date or default to today
+    let date = dateInput ? dateInput.value : '';
+    if (!date) {
+        const today = new Date();
+        date = today.toISOString().split('T')[0];
+        if (dateInput) {
+            dateInput.value = date;
+        }
+    }
+    
+    // Show loading
+    if (loading) {
+        loading.style.display = 'block';
+        loading.textContent = 'Loading daily progress...';
+    }
+    container.innerHTML = '<p id="track-loading" class="text-center text-gray-400">Loading daily progress...</p>';
+    
+    try {
+        const url = `${API_BASE_URL}/track?date=${date}`;
+        const response = await fetch(url, {
+            credentials: 'include'
+        });
+        
+        if (!response.ok) {
+            if (response.status === 401) {
+                container.innerHTML = '<p class="text-center text-red-500">Please log in to view your progress.</p>';
+                return;
+            }
+            throw new Error(`Network response was not ok: ${response.status}`);
+        }
+        
+        const tracks = await response.json();
+        console.log('Received track data:', tracks);
+        
+        renderTrackProgress(tracks, date);
+        
+    } catch (error) {
+        console.error('Failed to load track data:', error);
+        container.innerHTML = '<p class="text-center text-red-500">Failed to load daily progress. Check console for details.</p>';
+    }
+}
+
+function renderTrackProgress(tracks, date) {
+    const container = document.getElementById('track-container');
+    container.innerHTML = '';
+    
+    // Create header
+    const header = document.createElement('div');
+    header.className = 'mb-6';
+    const dateObj = new Date(date);
+    const formattedDate = dateObj.toLocaleDateString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+    header.innerHTML = `
+        <h3 class="text-lg font-bold text-purple-700 mb-2">Progress for ${formattedDate}</h3>
+        <p class="text-sm text-gray-600">Total Accomplishments: ${tracks.length}</p>
+    `;
+    container.appendChild(header);
+    
+    if (tracks.length === 0) {
+        container.innerHTML += '<p class="text-center text-gray-500 py-8">No activities tracked for this date.</p>';
+        return;
+    }
+    
+    // Group tracks by activity type
+    const tracksByType = {
+        'EAT': [],
+        'SLEEP': [],
+        'SHOWER': []
+    };
+    
+    tracks.forEach(track => {
+        const activityType = track.activity?.type || 'UNKNOWN';
+        if (tracksByType[activityType]) {
+            tracksByType[activityType].push(track);
+        }
+    });
+    
+    // Create progress cards for each activity type
+    const icons = { EAT: '🍎', SLEEP: '🛌', SHOWER: '🚿' };
+    const colors = {
+        EAT: { bg: 'bg-green-50', border: 'border-green-200', text: 'text-green-700' },
+        SLEEP: { bg: 'bg-indigo-50', border: 'border-indigo-200', text: 'text-indigo-700' },
+        SHOWER: { bg: 'bg-sky-50', border: 'border-sky-200', text: 'text-sky-700' }
+    };
+    
+    // Fetch goals for comparison
+    fetch(`${API_BASE_URL}/goals/daily`, { credentials: 'include' })
+        .then(response => response.json())
+        .then(goals => {
+            ['EAT', 'SLEEP', 'SHOWER'].forEach(type => {
+                const typeTracks = tracksByType[type] || [];
+                const doneCount = typeTracks.filter(t => t.status === 'DONE').length;
+                const goal = goals[type] || 1; // Default to 1 if goal not set
+                const progressPercent = Math.min(Math.round((doneCount / goal) * 100), 100);
+                const isComplete = doneCount >= goal;
+                
+                const card = document.createElement('div');
+                card.className = `p-4 rounded-lg border-2 ${colors[type].bg} ${colors[type].border} mb-4`;
+                
+                card.innerHTML = `
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center gap-3">
+                            <span class="text-3xl">${icons[type]}</span>
+                            <div>
+                                <h4 class="font-bold ${colors[type].text} text-lg">${type}</h4>
+                                <p class="text-sm text-gray-600">${doneCount} / ${goal} completed</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-2xl font-bold ${colors[type].text}">${progressPercent}%</p>
+                            <p class="text-xs text-gray-500">of goal</p>
+                        </div>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-3 mb-2">
+                        <div class="${isComplete ? 'bg-green-500' : colors[type].bg.replace('50', '400')} h-3 rounded-full transition-all duration-500" 
+                             style="width: ${progressPercent}%"></div>
+                    </div>
+                    <div class="text-sm text-gray-700">
+                        <span class="font-semibold">Goal:</span> ${goal} ${type.toLowerCase()}${goal === 1 ? '' : 's'} per day
+                    </div>
+                `;
+                
+                container.appendChild(card);
+            });
+        })
+        .catch(error => {
+            console.error('Failed to load goals:', error);
+            // Fallback: show without goals
+            ['EAT', 'SLEEP', 'SHOWER'].forEach(type => {
+                const typeTracks = tracksByType[type] || [];
+                const doneCount = typeTracks.filter(t => t.status === 'DONE').length;
+                
+                const card = document.createElement('div');
+                card.className = `p-4 rounded-lg border-2 ${colors[type].bg} ${colors[type].border} mb-4`;
+                
+                card.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <span class="text-3xl">${icons[type]}</span>
+                            <div>
+                                <h4 class="font-bold ${colors[type].text} text-lg">${type}</h4>
+                                <p class="text-sm text-gray-600">${doneCount} completed</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                container.appendChild(card);
+            });
+        });
+}
+
 // --- Initial Load ---
 document.addEventListener('DOMContentLoaded', () => {
     loadSummary();
+    loadTrackProgress();
+    
+    // Set up track date selector
+    const trackDateInput = document.getElementById('track-date');
+    if (trackDateInput) {
+        trackDateInput.addEventListener('change', loadTrackProgress);
+    }
     
     // Set up attribute tracking event listeners
     const typeSelect = document.getElementById('attribute-type');

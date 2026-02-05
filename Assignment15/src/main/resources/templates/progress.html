@@ -13,13 +13,13 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #FF7F7F; /* UI background */
+            background: linear-gradient(135deg, #FF7F7F 50%, #FB607F 50%);
         }
     </style>
 </head>
 <body class="h-screen flex flex-col items-center p-4 overflow-hidden">
 
-    <div class="w-full bg-white shadow-xl rounded-2xl p-6 md:p-8 my-4 flex flex-col h-[calc(100vh-2rem)]">
+    <div class="w-full bg-white/95 backdrop-blur-sm shadow-2xl rounded-3xl p-6 md:p-8 my-4 flex flex-col h-[calc(100vh-2rem)]">
         <!-- Header -->
         <header class="mb-6 flex-shrink-0">
             <div class="flex items-center justify-between mb-2">
@@ -27,7 +27,7 @@
                     📅
                 </a>
                 <div class="flex-1">
-                    <h1 class="text-3xl md:text-4xl font-extrabold text-blue-800 text-center">Progress</h1>
+                    <h1 class="text-3xl md:text-4xl font-extrabold text-center bg-gradient-to-r from-[#E4717A] to-[#FB607F] bg-clip-text text-transparent">Progress</h1>
                 </div>
                 <div class="flex items-center gap-3">
                     <a href="/profile" class="text-3xl hover:scale-110 transition-transform" title="Profile">
@@ -38,14 +38,14 @@
                     </a>
                 </div>
             </div>
-            <p class="text-gray-500 mt-2 text-center">View your self-care activity summaries.</p>
+            <p class="text-gray-600 mt-2 text-center font-medium">View your self-care activity summaries.</p>
         </header>
 
         <!-- Page Content: Progress -->
         <main class="flex-1 overflow-y-auto">
             <!-- Summary Cards -->
             <section>
-                <h2 class="text-xl font-bold text-gray-700 mb-4">Summary: Last 24 Hours</h2>
+                <h2 class="text-xl font-bold text-[#E4717A] mb-4">Summary: Last 24 Hours</h2>
                 <div id="summary-cards" class="grid grid-cols-3 gap-4 mb-8">
                     <!-- Cards will be injected by JS -->
                     <p id="summary-loading" class="text-center text-gray-400 col-span-3">Loading summary...</p>
@@ -54,21 +54,38 @@
             
             <!-- Chart -->
             <section>
-                <h2 class="text-xl font-bold text-gray-700 mb-4">Activity: Last 7 Days</h2>
-                <div id="chart-container" class="w-full h-64 bg-gray-50 rounded-lg p-2">
+                <h2 class="text-xl font-bold text-[#E4717A] mb-4">Activity: Last 7 Days</h2>
+                <div id="chart-container" class="w-full h-64 bg-[#FFF5F7] rounded-2xl p-4 border-2 border-[#FFE8ED]">
                     <!-- D3 Chart will be injected here -->
+                </div>
+            </section>
+            
+            <!-- Daily Track Progress -->
+            <section class="mt-8">
+                <h2 class="text-xl font-bold text-[#E4717A] mb-4">Daily Progress Tracking</h2>
+                
+                <!-- Date Selector -->
+                <div class="mb-4">
+                    <label for="track-date" class="block text-sm font-semibold text-gray-700 mb-2">Select Date</label>
+                    <input type="date" id="track-date" 
+                           class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-[#FB607F] focus:border-[#FB607F] transition">
+                </div>
+                
+                <!-- Track Progress Container -->
+                <div id="track-container" class="bg-[#FFF5F7] rounded-2xl p-6 min-h-64 border-2 border-[#FFE8ED]">
+                    <p id="track-loading" class="text-center text-gray-400">Loading daily progress...</p>
                 </div>
             </section>
             
             <!-- Attribute-Based Tracking -->
             <section class="mt-8">
-                <h2 class="text-xl font-bold text-gray-700 mb-4">Track by Attributes</h2>
+                <h2 class="text-xl font-bold text-[#E4717A] mb-4">Track by Attributes</h2>
                 
                 <!-- Dropdown Controls -->
                 <div class="flex gap-4 mb-6">
                     <div class="flex-1">
-                        <label for="attribute-type" class="block text-sm font-medium text-gray-700 mb-2">Activity Type</label>
-                        <select id="attribute-type" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <label for="attribute-type" class="block text-sm font-semibold text-gray-700 mb-2">Activity Type</label>
+                        <select id="attribute-type" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-[#FB607F] focus:border-[#FB607F] transition">
                             <option value="SLEEP">Sleep Quality</option>
                             <option value="EAT">Meals</option>
                             <option value="SHOWER">Shower Length</option>
@@ -76,8 +93,8 @@
                     </div>
                     
                     <div class="flex-1">
-                        <label for="attribute-period" class="block text-sm font-medium text-gray-700 mb-2">Time Period</label>
-                        <select id="attribute-period" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <label for="attribute-period" class="block text-sm font-semibold text-gray-700 mb-2">Time Period</label>
+                        <select id="attribute-period" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-[#FB607F] focus:border-[#FB607F] transition">
                             <option value="24h">Last 24 Hours</option>
                             <option value="7d">Last 7 Days</option>
                             <option value="30d">Last 30 Days</option>
@@ -86,7 +103,7 @@
                 </div>
                 
                 <!-- Attribute Visualization Container -->
-                <div id="attribute-container" class="bg-gray-50 rounded-lg p-6 min-h-64">
+                <div id="attribute-container" class="bg-[#FFF5F7] rounded-2xl p-6 min-h-64 border-2 border-[#FFE8ED]">
                     <p id="attribute-loading" class="text-center text-gray-400">Select an activity type to view details...</p>
                 </div>
             </section>
