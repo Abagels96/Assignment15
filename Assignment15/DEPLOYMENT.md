@@ -54,6 +54,12 @@ Set these in your Railway service environment variables:
   - Replace `your-app-name` with your actual Railway app domain
   - You can find your domain in Railway service settings under "Settings" → "Domains"
 
+### Database Platform (Auto-detected)
+
+The application automatically detects the database platform from the JDBC URL, so you typically don't need to set this:
+
+- `DATABASE_PLATFORM` - **Optional**: Auto-detected from `JDBC_DATABASE_URL`. Can be manually set to `org.hibernate.dialect.PostgreSQLDialect` if auto-detection fails
+
 ### Optional Configuration Variables
 
 These have defaults but can be overridden:
@@ -64,7 +70,7 @@ These have defaults but can be overridden:
 - `SECURITY_LOG_LEVEL` - Set to `INFO` or `WARN` in production (default: `DEBUG`)
 - `SECURITY_USER_NAME` - Default Spring Security user (default: `user`)
 - `SECURITY_USER_PASSWORD` - Default Spring Security password (default: `{noop}Password123!`)
-- `DATABASE_PLATFORM` - Can be set to `org.hibernate.dialect.PostgreSQLDialect` if auto-detection fails
+- `DATABASE_DRIVER` - Usually auto-detected, but can be set to `org.postgresql.Driver` if needed
 
 ## Step 5: Update Google OAuth Redirect URI
 
@@ -95,6 +101,7 @@ These have defaults but can be overridden:
 ### Database Connection Issues
 
 - Verify that `JDBC_DATABASE_URL`, `JDBC_DATABASE_USERNAME`, and `JDBC_DATABASE_PASSWORD` are set
+- The application auto-detects the database platform from the JDBC URL. If you see "Failed to determine DatabaseDriver" errors, manually set `DATABASE_PLATFORM=org.hibernate.dialect.PostgreSQLDialect`
 - Check Railway database logs for connection errors
 - Ensure the PostgreSQL service is running in Railway
 
@@ -128,6 +135,12 @@ These have defaults but can be overridden:
 | `GOOGLE_CLIENT_ID` | Google OAuth Client ID | `757667480872-...` |
 | `GOOGLE_CLIENT_SECRET` | Google OAuth Client Secret | `GOCSPX-...` |
 | `GOOGLE_REDIRECT_URI` | OAuth redirect URI | `https://app.up.railway.app/login/oauth2/code/google` |
+
+### Optional (Auto-detected)
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `DATABASE_PLATFORM` | Hibernate database dialect (auto-detected) | `org.hibernate.dialect.PostgreSQLDialect` |
 
 ### Recommended for Production
 
