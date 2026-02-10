@@ -1,6 +1,6 @@
 // --- API Configuration ---
-const API_BASE_URL = 'http://localhost:8080/selfcare';
-const TASKS_API_URL = 'http://localhost:8080/tasks';
+const API_BASE_URL = '/selfcare';
+const TASKS_API_URL = '/tasks';
 
 const type= document.getElementById("action-buttons")
 
