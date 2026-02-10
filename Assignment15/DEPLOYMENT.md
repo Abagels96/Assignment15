@@ -14,11 +14,11 @@ This guide walks you through deploying the Assignment15 MomTracker application t
 2. Click "New Project"
 3. Select "Deploy from GitHub repo" (if your code is on GitHub) or "Empty Project" (to deploy manually)
 
-## Step 2: Add PostgreSQL Database
+## Step 2: Add MySQL Database
 
 1. In your Railway project, click "+ New"
-2. Select "Database" → "Add PostgreSQL"
-3. Railway will automatically create a PostgreSQL database and provide connection details
+2. Select "Database" → "Add MySQL"
+3. Railway will automatically create a MySQL database and provide connection details
 
 ## Step 3: Configure Your Application Service
 
@@ -37,12 +37,10 @@ In your Railway service settings, add the following environment variables:
 
 ### Database Variables (Auto-configured by Railway)
 
-Railway automatically provides these when you add a PostgreSQL database:
-- `JDBC_DATABASE_URL` - Automatically set by Railway (format: `jdbc:postgresql://host:port/database`)
+Railway automatically provides these when you add a MySQL database:
+- `JDBC_DATABASE_URL` - Automatically set by Railway (format: `jdbc:mysql://host:port/database`)
 - `JDBC_DATABASE_USERNAME` - Automatically set by Railway
 - `JDBC_DATABASE_PASSWORD` - Automatically set by Railway
-
-**Note**: Railway may also provide `DATABASE_URL` in PostgreSQL format. If so, you may need to convert it to JDBC format or Railway will provide `JDBC_DATABASE_URL` directly.
 
 ### OAuth2 Google Configuration
 
@@ -58,7 +56,7 @@ Set these in your Railway service environment variables:
 
 The application automatically detects the database platform from the JDBC URL, so you typically don't need to set this:
 
-- `DATABASE_PLATFORM` - **Optional**: Auto-detected from `JDBC_DATABASE_URL`. Can be manually set to `org.hibernate.dialect.PostgreSQLDialect` if auto-detection fails
+- `DATABASE_PLATFORM` - **Optional**: Auto-detected from `JDBC_DATABASE_URL`. Can be manually set to `org.hibernate.dialect.MySQLDialect` if auto-detection fails
 
 ### Optional Configuration Variables
 
@@ -70,7 +68,7 @@ These have defaults but can be overridden:
 - `SECURITY_LOG_LEVEL` - Set to `INFO` or `WARN` in production (default: `DEBUG`)
 - `SECURITY_USER_NAME` - Default Spring Security user (default: `user`)
 - `SECURITY_USER_PASSWORD` - Default Spring Security password (default: `{noop}Password123!`)
-- `DATABASE_DRIVER` - Usually auto-detected, but can be set to `org.postgresql.Driver` if needed
+- `DATABASE_DRIVER` - Usually auto-detected, but can be set to `com.mysql.cj.jdbc.Driver` if needed
 
 ## Step 5: Update Google OAuth Redirect URI
 
@@ -101,9 +99,9 @@ These have defaults but can be overridden:
 ### Database Connection Issues
 
 - Verify that `JDBC_DATABASE_URL`, `JDBC_DATABASE_USERNAME`, and `JDBC_DATABASE_PASSWORD` are set
-- The application auto-detects the database platform from the JDBC URL. If you see "Failed to determine DatabaseDriver" errors, manually set `DATABASE_PLATFORM=org.hibernate.dialect.PostgreSQLDialect`
+- The application auto-detects the database platform from the JDBC URL. If you see "Failed to determine DatabaseDriver" errors, manually set `DATABASE_PLATFORM=org.hibernate.dialect.MySQLDialect`
 - Check Railway database logs for connection errors
-- Ensure the PostgreSQL service is running in Railway
+- Ensure the MySQL service is running in Railway
 
 ### OAuth Issues
 
@@ -129,7 +127,7 @@ These have defaults but can be overridden:
 
 | Variable | Description | Example |
 |----------|-------------|---------|
-| `JDBC_DATABASE_URL` | PostgreSQL connection URL | Auto-set by Railway |
+| `JDBC_DATABASE_URL` | MySQL connection URL | Auto-set by Railway |
 | `JDBC_DATABASE_USERNAME` | Database username | Auto-set by Railway |
 | `JDBC_DATABASE_PASSWORD` | Database password | Auto-set by Railway |
 | `GOOGLE_CLIENT_ID` | Google OAuth Client ID | `757667480872-...` |
@@ -140,7 +138,7 @@ These have defaults but can be overridden:
 
 | Variable | Description | Example |
 |----------|-------------|---------|
-| `DATABASE_PLATFORM` | Hibernate database dialect (auto-detected) | `org.hibernate.dialect.PostgreSQLDialect` |
+| `DATABASE_PLATFORM` | Hibernate database dialect (auto-detected) | `org.hibernate.dialect.MySQLDialect` |
 
 ### Recommended for Production
 
@@ -152,7 +150,7 @@ These have defaults but can be overridden:
 
 ## Additional Notes
 
-- The application uses Spring Session JDBC, which will automatically create session tables in your PostgreSQL database
+- The application uses Spring Session JDBC, which will automatically create session tables in your MySQL database
 - Hibernate will auto-create/update database schema on first startup (`spring.jpa.hibernate.ddl-auto=update`)
 - For production, consider setting `spring.jpa.hibernate.ddl-auto=validate` after initial deployment to prevent accidental schema changes
 - Railway provides automatic HTTPS, so your app will be accessible via HTTPS
