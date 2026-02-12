@@ -1,4 +1,5 @@
 package com.coderscampus.Assignment15.service;
+
 import java.util.Collections;
 
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -31,3 +32,4 @@ public class DatabaseUserDetailsService implements UserDetailsService {
     );
   }
 }
+
