@@ -36,28 +36,36 @@ public class SelfCareService {
         return activityRepository.save(activity);
     }
 
-    public List<Activity> findAllActivities() {
+    public List<Activity> findAllActivitiesForUser(User user) {
         // We sort here in Java to avoid complex DB queries
-        List<Activity> activities = activityRepository.findAll();
+        List<Activity> activities = activityRepository.findByUser(user);
         activities.sort((a, b) -> b.getTimestamp().compareTo(a.getTimestamp()));
         return activities;
     }
 
-    public void deleteAllActivities() {
-        activityRepository.deleteAll();
+    public void deleteAllActivitiesForUser(User user) {
+        List<Activity> userActivities = activityRepository.findByUser(user);
+        activityRepository.deleteAll(userActivities);
     }
 
-    public void deleteActivityById(Long id) {
-        activityRepository.deleteById(id);
+    public void deleteActivityByIdForUser(Long id, User user) {
+        Activity activity = activityRepository.findById(id).orElse(null);
+        if (activity != null && activity.getUser().getUserId().equals(user.getUserId())) {
+            activityRepository.deleteById(id);
+        }
     }
 
-    public Activity findActivityById(Long id) {
-        return activityRepository.findById(id).orElse(null);
+    public Activity findActivityByIdForUser(Long id, User user) {
+        Activity activity = activityRepository.findById(id).orElse(null);
+        if (activity != null && activity.getUser().getUserId().equals(user.getUserId())) {
+            return activity;
+        }
+        return null;
     }
 
     // This is for the progress page!
-    public Map<String, Long> getSummaryForPeriod(Instant after) {
-        return activityRepository.countActivitiesByTypeAfter(after)
+    public Map<String, Long> getSummaryForPeriod(User user, Instant after) {
+        return activityRepository.countActivitiesByTypeAfterForUser(user.getUserId(), after)
                 .stream()
                 .collect(Collectors.toMap(
                         obj -> (String) obj[0], // Key: "EAT", "SLEEP", "SHOWER"
@@ -70,8 +78,8 @@ public class SelfCareService {
     /**
      * Get counts of sleep activities grouped by quality
      */
-    public Map<String, Long> getSleepQualityCounts(Instant after) {
-        List<Sleep> sleepActivities = activityRepository.findSleepActivitiesAfter(after);
+    public Map<String, Long> getSleepQualityCounts(User user, Instant after) {
+        List<Sleep> sleepActivities = activityRepository.findSleepActivitiesForUserAfter(user, after);
         
         // Initialize map with all quality levels at 0
         Map<String, Long> counts = new HashMap<>();
@@ -97,8 +105,8 @@ public class SelfCareService {
     /**
      * Calculate average sleep duration in hours
      */
-    public Double getAverageSleepDuration(Instant after) {
-        List<Sleep> sleepActivities = activityRepository.findSleepActivitiesAfter(after);
+    public Double getAverageSleepDuration(User user, Instant after) {
+        List<Sleep> sleepActivities = activityRepository.findSleepActivitiesForUserAfter(user, after);
         
         // Filter to only include sleeps with both start and end times
         List<Sleep> completedSleeps = sleepActivities.stream()
@@ -123,8 +131,8 @@ public class SelfCareService {
     /**
      * Get list of meal descriptions with timestamps
      */
-    public List<AttributeSummaryDTO.MealInfo> getMealDescriptions(Instant after) {
-        List<Eat> eatActivities = activityRepository.findEatActivitiesAfter(after);
+    public List<AttributeSummaryDTO.MealInfo> getMealDescriptions(User user, Instant after) {
+        List<Eat> eatActivities = activityRepository.findEatActivitiesForUserAfter(user, after);
         
         return eatActivities.stream()
                 .map(eat -> new AttributeSummaryDTO.MealInfo(
@@ -138,8 +146,8 @@ public class SelfCareService {
     /**
      * Calculate average shower length in minutes
      */
-    public Double getAverageShowerLength(Instant after) {
-        List<Shower> showerActivities = activityRepository.findShowerActivitiesAfter(after);
+    public Double getAverageShowerLength(User user, Instant after) {
+        List<Shower> showerActivities = activityRepository.findShowerActivitiesForUserAfter(user, after);
         
         // Filter to only include showers with length recorded
         List<Shower> showersWithLength = showerActivities.stream()
@@ -164,6 +172,8 @@ public class SelfCareService {
      */
     @Transactional
     public Activity saveActivityWithTrack(User user, Activity activity) {
+        // Set the user on the activity before saving
+        activity.setUser(user);
         // Save the activity first
         Activity savedActivity = activityRepository.save(activity);
 
@@ -259,6 +269,15 @@ public class SelfCareService {
      */
     public List<Track> getTracksForUserAndDate(User user, LocalDate date) {
         return trackRepository.findTracksByUserAndDate(user, date);
+    }
+
+    /**
+     * Get activities for a user within a time period (for timeline)
+     */
+    public List<Activity> getActivitiesForUserAfter(User user, Instant after) {
+        List<Activity> activities = activityRepository.findByUserAndTimestampAfter(user, after);
+        activities.sort((a, b) -> a.getTimestamp().compareTo(b.getTimestamp())); // Oldest first
+        return activities;
     }
 }
 

@@ -6,6 +6,12 @@ package com.coderscampus.Assignment15.domain;
 	import jakarta.persistence.Id;
 	import jakarta.persistence.Table;
 	import jakarta.persistence.Column;
+	import jakarta.persistence.ManyToMany;
+	import jakarta.persistence.OneToMany;
+	import java.util.HashSet;
+	import java.util.Set;
+	import java.util.List;
+	import com.fasterxml.jackson.annotation.JsonIgnore;
 @Entity
 	@Table(name = "users")
 public class User {
@@ -63,6 +69,14 @@ public class User {
 	@Column(nullable = false)
 	private String childAges;
 
+    @ManyToMany(mappedBy = "users")
+    @JsonIgnore
+    private Set<Task> tasks = new HashSet<>();
+
+    @OneToMany(mappedBy = "user")
+    @JsonIgnore
+    private List<Activity> activities;
+
 	
 	
 		  public Long getUserId() {
@@ -103,6 +117,22 @@ public class User {
 		public void setPassword(String password) {
 			this.password = password;
 		}
+
+    public Set<Task> getTasks() {
+        return tasks;
+    }
+
+    public void setTasks(Set<Task> tasks) {
+        this.tasks = tasks;
+    }
+
+    public List<Activity> getActivities() {
+        return activities;
+    }
+
+    public void setActivities(List<Activity> activities) {
+        this.activities = activities;
+    }
 
 
 		
