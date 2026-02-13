@@ -29,6 +29,7 @@
     const editBtn = document.getElementById('profile-edit-btn');
     const saveBtn = document.getElementById('profile-save-btn');
     const cancelBtn = document.getElementById('profile-cancel-btn');
+    const logoutBtn = document.getElementById('profile-logout-btn');
 
     const inputs = [
       'profile-username-input',
@@ -240,6 +241,20 @@
         } finally {
           passwordSaveBtn.disabled = false;
           passwordSaveBtn.classList.remove('opacity-75', 'cursor-not-allowed');
+        }
+      });
+    }
+
+    if (logoutBtn) {
+      logoutBtn.addEventListener('click', async () => {
+        logoutBtn.disabled = true;
+        logoutBtn.classList.add('opacity-75', 'cursor-not-allowed');
+        try {
+          await fetch('/logout', { method: 'POST' });
+        } catch (e) {
+          // Ignore network errors; we still want to send the user to login.
+        } finally {
+          window.location.href = '/login';
         }
       });
     }

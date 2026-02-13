@@ -48,16 +48,21 @@
                 <div id="profile-message" class="hidden rounded-lg border px-4 py-3 text-sm"></div>
 
                 <div class="rounded-2xl border-2 border-[#FFE8ED] bg-white p-6 shadow-lg">
-                    <div class="flex items-center justify-end gap-2 mb-4">
-                        <button id="profile-edit-btn" class="px-5 py-2.5 rounded-xl bg-[#FB607F] hover:bg-[#E4717A] text-white font-bold transition shadow-lg">
-                            Edit
+                    <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+                        <button id="profile-logout-btn" class="px-5 py-2.5 rounded-xl border-2 border-[#FFE8ED] hover:bg-[#FFF5F7] text-gray-800 font-bold transition shadow-sm">
+                            Logout
                         </button>
-                        <button id="profile-cancel-btn" class="hidden px-5 py-2.5 rounded-xl border-2 border-gray-300 hover:bg-gray-50 text-gray-800 font-bold transition">
-                            Cancel
-                        </button>
-                        <button id="profile-save-btn" class="hidden px-5 py-2.5 rounded-xl bg-[#FA8072] hover:bg-[#E4717A] text-white font-bold transition shadow-lg">
-                            Save
-                        </button>
+                        <div class="flex items-center gap-2">
+                            <button id="profile-edit-btn" class="px-5 py-2.5 rounded-xl bg-[#FB607F] hover:bg-[#E4717A] text-white font-bold transition shadow-lg">
+                                Edit
+                            </button>
+                            <button id="profile-cancel-btn" class="hidden px-5 py-2.5 rounded-xl border-2 border-gray-300 hover:bg-gray-50 text-gray-800 font-bold transition">
+                                Cancel
+                            </button>
+                            <button id="profile-save-btn" class="hidden px-5 py-2.5 rounded-xl bg-[#FA8072] hover:bg-[#E4717A] text-white font-bold transition shadow-lg">
+                                Save
+                            </button>
+                        </div>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
