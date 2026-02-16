@@ -9,17 +9,23 @@
 <!-- Use Inter font -->
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
-	
+
+html, body {
+	height: 100%;
+}
+
 body {
 	font-family: 'Inter', sans-serif;
 	background: linear-gradient(135deg, #FF7F7F 0%, #FB607F 100%); /* Grapefruit to bubblegum gradient */
+	overflow-y: auto;
+	-webkit-overflow-scrolling: touch;
 }
 </style>
 </head>
-<body class="h-screen flex flex-col items-center p-4 overflow-hidden">
+<body class="min-h-screen flex flex-col items-center p-4 overflow-y-auto overflow-x-hidden">
 
 	<div
-		class="w-full bg-white/95 backdrop-blur-sm shadow-2xl rounded-3xl p-6 md:p-8 my-4 flex flex-col h-[calc(100vh-2rem)]">
+		class="w-full bg-white/95 backdrop-blur-sm shadow-2xl rounded-3xl p-6 md:p-8 my-4 flex flex-col min-h-[calc(100vh-2rem)]">
 		<!-- Header -->
 		<header class="mb-6 flex-shrink-0">
 			<div class="flex items-center justify-between mb-2">
