@@ -46,12 +46,24 @@ public class AuthController {
 
 	@GetMapping("/me")
 	public ResponseEntity<?> me(Authentication authentication) {
+		System.out.println("=== /auth/me endpoint called ==="); // Debug log
+		System.out.println("Authentication object: " + authentication); // Debug log
+		
 		if (authentication == null || !authentication.isAuthenticated()) {
+			System.out.println("Authentication is null or not authenticated"); // Debug log
 			return new ResponseEntity<>("Not authenticated.", HttpStatus.UNAUTHORIZED);
 		}
 
+		System.out.println("Authenticated user: " + authentication.getName()); // Debug log
+
 		try {
 			User user = userService.findByUsername(authentication.getName());
+			System.out.println("User found: " + user.getUsername()); // Debug log
+			System.out.println("User data - displayName: " + user.getDisplayName() +
+					", numChildren: " + user.getNumChildren() +
+					", childNames: " + user.getChildNames() +
+					", childAges: " + user.getChildAges()); // Debug log
+			
 			return new ResponseEntity<>(
 					new ProfileResponse(
 							user.getUserId(),
@@ -63,8 +75,10 @@ public class AuthController {
 					),
 					HttpStatus.OK);
 		} catch (IllegalArgumentException ex) {
+			System.out.println("IllegalArgumentException: " + ex.getMessage()); // Debug log
 			return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
 		} catch (IllegalStateException ex) {
+			System.out.println("IllegalStateException: " + ex.getMessage()); // Debug log
 			return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
 		}
 	}
