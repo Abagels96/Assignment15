@@ -17,7 +17,7 @@ import java.time.LocalDate;
 @Table(
     name = "task_completion",
     uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"task_id", "completion_date"})
+        @UniqueConstraint(columnNames = {"task_id", "user_id", "completion_date"})
     }
 )
 public class TaskCompletion {
@@ -29,6 +29,11 @@ public class TaskCompletion {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "task_id", nullable = false)
     private Task task;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    @JsonIgnore
+    private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "activity_id")
@@ -44,8 +49,9 @@ public class TaskCompletion {
     public TaskCompletion() {
     }
 
-    public TaskCompletion(Task task, LocalDate completionDate, Boolean completed, Activity activity) {
+    public TaskCompletion(Task task, User user, LocalDate completionDate, Boolean completed, Activity activity) {
         this.task = task;
+        this.user = user;
         this.completionDate = completionDate;
         this.completed = completed;
         this.activity = activity;
@@ -65,6 +71,14 @@ public class TaskCompletion {
 
     public void setTask(Task task) {
         this.task = task;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 
     public Activity getActivity() {

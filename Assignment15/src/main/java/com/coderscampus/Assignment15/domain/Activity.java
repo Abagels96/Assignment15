@@ -8,9 +8,13 @@ import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
 import jakarta.persistence.Transient;
 import jakarta.persistence.DiscriminatorColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.FetchType;
 import java.time.Instant;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
@@ -24,6 +28,11 @@ public class Activity {
     
     private Instant timestamp;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    @JsonIgnore
+    private User user;
+
     // Constructors, Getters, and Setters
     public Activity() {
     }
@@ -33,6 +42,8 @@ public class Activity {
     public Instant getTimestamp() { return timestamp; }
     public void setTimestamp(Instant timestamp) { this.timestamp = timestamp; }
     
+    public User getUser() { return user; }
+    public void setUser(User user) { this.user = user; }
     
     @Transient
     @JsonGetter("type")

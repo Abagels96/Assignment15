@@ -12,9 +12,9 @@ import java.util.List;
 import java.util.Optional;
 
 public interface TaskCompletionRepository extends JpaRepository<TaskCompletion, Long> {
-    Optional<TaskCompletion> findByTaskAndCompletionDate(Task task, LocalDate completionDate);
+    Optional<TaskCompletion> findByTaskAndUserAndCompletionDate(Task task, User user, LocalDate completionDate);
 
-    @Query("SELECT tc FROM TaskCompletion tc WHERE tc.task.user = :user AND tc.completionDate = :date")
+    @Query("SELECT tc FROM TaskCompletion tc WHERE tc.user = :user AND tc.completionDate = :date")
     List<TaskCompletion> findByUserAndCompletionDate(@Param("user") User user, @Param("date") LocalDate date);
 }
 
