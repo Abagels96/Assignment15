@@ -85,6 +85,7 @@
     const editBtn = document.getElementById('profile-edit-btn');
     const saveBtn = document.getElementById('profile-save-btn');
     const cancelBtn = document.getElementById('profile-cancel-btn');
+    const logoutBtn = document.getElementById('profile-logout-btn');
 
     const passwordToggleBtn = document.getElementById('password-toggle-btn');
     const passwordForm = document.getElementById('password-form');
