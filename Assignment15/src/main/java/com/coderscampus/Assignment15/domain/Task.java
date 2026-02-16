@@ -1,7 +1,6 @@
 package com.coderscampus.Assignment15.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -10,8 +9,11 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "task")
@@ -24,10 +26,14 @@ public class Task {
 @Id
 @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long taskId; 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+        name = "user_tasks",
+        joinColumns = @JoinColumn(name = "task_id"),
+        inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
     @JsonIgnore
-    private User user;
+    private Set<User> users = new HashSet<>();
     public String getName() {
         return name;
     }
@@ -68,12 +74,12 @@ public class Task {
         isCompleted = completed;
     }
 
-    public User getUser() {
-        return user;
+    public Set<User> getUsers() {
+        return users;
     }
 
-    public void setUser(User user) {
-        this.user = user;
+    public void setUsers(Set<User> users) {
+        this.users = users;
     }
 }
 

@@ -28,8 +28,6 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * REST Controller for Self-Care Activities.
@@ -230,9 +228,19 @@ public class SelfCareController {
      * Used by the frontend to fetch all recorded activities for display.
      */
     @GetMapping("/history")
-    public ResponseEntity<List<Activity>> getHistory() {
-        List<Activity> history = selfCareService.findAllActivities();
-        return new ResponseEntity<>(history, HttpStatus.OK);
+    public ResponseEntity<List<Activity>> getHistory(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        try {
+            User user = userService.findByUsername(authentication.getName());
+            List<Activity> history = selfCareService.findAllActivitiesForUser(user);
+            return new ResponseEntity<>(history, HttpStatus.OK);
+        } catch (Exception e) {
+            System.err.println("Error fetching history: " + e.getMessage());
+            e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     /**
@@ -240,15 +248,20 @@ public class SelfCareController {
      * Used by the Progress Page to get summary data for visualizations.
      */
     @GetMapping("/summary")
-    public ResponseEntity<SummaryDTO> getSummary() {
-        // Calculate time boundaries
-        Instant now = Instant.now();
-        Instant aDayAgo = now.minus(24, ChronoUnit.HOURS);
-        Instant aWeekAgo = now.minus(7, ChronoUnit.DAYS);
+    public ResponseEntity<SummaryDTO> getSummary(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        try {
+            User user = userService.findByUsername(authentication.getName());
+            // Calculate time boundaries
+            Instant now = Instant.now();
+            Instant aDayAgo = now.minus(24, ChronoUnit.HOURS);
+            Instant aWeekAgo = now.minus(7, ChronoUnit.DAYS);
 
-        // Fetch summary data from the service
-        Map<String, Long> last24Hours = selfCareService.getSummaryForPeriod(aDayAgo);
-        Map<String, Long> last7Days = selfCareService.getSummaryForPeriod(aWeekAgo);
+            // Fetch summary data from the service
+            Map<String, Long> last24Hours = selfCareService.getSummaryForPeriod(user, aDayAgo);
+            Map<String, Long> last7Days = selfCareService.getSummaryForPeriod(user, aWeekAgo);
         
         // Ensure all types are present in the map, even if count is 0
         last24Hours.putIfAbsent("EAT", 0L);
@@ -259,10 +272,15 @@ public class SelfCareController {
         last7Days.putIfAbsent("SLEEP", 0L);
         last7Days.putIfAbsent("SHOWER", 0L);
 
-        // Create the DTO to send to the frontend
-        SummaryDTO summary = new SummaryDTO(last24Hours, last7Days);
-        
-        return new ResponseEntity<>(summary, HttpStatus.OK);
+            // Create the DTO to send to the frontend
+            SummaryDTO summary = new SummaryDTO(last24Hours, last7Days);
+            
+            return new ResponseEntity<>(summary, HttpStatus.OK);
+        } catch (Exception e) {
+            System.err.println("Error fetching summary: " + e.getMessage());
+            e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     /**
@@ -270,9 +288,19 @@ public class SelfCareController {
      * Used by the frontend to delete all history.
      */
     @DeleteMapping("/history/clear")
-    public ResponseEntity<Void> clearAllHistory() {
-        selfCareService.deleteAllActivities();
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT); // 204 No Content is standard for success
+    public ResponseEntity<Void> clearAllHistory(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        try {
+            User user = userService.findByUsername(authentication.getName());
+            selfCareService.deleteAllActivitiesForUser(user);
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT); // 204 No Content is standard for success
+        } catch (Exception e) {
+            System.err.println("Error clearing history: " + e.getMessage());
+            e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     /**
@@ -280,9 +308,23 @@ public class SelfCareController {
      * Used by the frontend to delete a single activity by ID.
      */
     @DeleteMapping("/activity/{id}")
-    public ResponseEntity<Void> deleteActivity(@PathVariable Long id) {
-        selfCareService.deleteActivityById(id);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    public ResponseEntity<Void> deleteActivity(@PathVariable Long id, Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        try {
+            User user = userService.findByUsername(authentication.getName());
+            Activity activity = selfCareService.findActivityByIdForUser(id, user);
+            if (activity == null) {
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            }
+            selfCareService.deleteActivityByIdForUser(id, user);
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        } catch (Exception e) {
+            System.err.println("Error deleting activity: " + e.getMessage());
+            e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     /**
@@ -296,8 +338,9 @@ public class SelfCareController {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
         try {
-            // Find existing activity
-            Activity existingActivity = selfCareService.findActivityById(id);
+            User user = userService.findByUsername(authentication.getName());
+            // Find existing activity and verify ownership
+            Activity existingActivity = selfCareService.findActivityByIdForUser(id, user);
             if (existingActivity == null) {
                 return new ResponseEntity<>(HttpStatus.NOT_FOUND);
             }
@@ -328,7 +371,6 @@ public class SelfCareController {
                     return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
                 }
                 
-                User user = userService.findByUsername(authentication.getName());
                 Activity updated = selfCareService.saveActivity(eat);
                 selfCareService.updateTrackStatusForActivity(updated, user);
                 return new ResponseEntity<>(updated, HttpStatus.OK);
@@ -376,7 +418,6 @@ public class SelfCareController {
                     .atZone(ZoneId.systemDefault())
                     .toInstant());
                 
-                User user = userService.findByUsername(authentication.getName());
                 Activity updated = selfCareService.saveActivity(sleep);
                 selfCareService.updateTrackStatusForActivity(updated, user);
                 return new ResponseEntity<>(updated, HttpStatus.OK);
@@ -428,7 +469,6 @@ public class SelfCareController {
                     return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
                 }
                 
-                User user = userService.findByUsername(authentication.getName());
                 Activity updated = selfCareService.saveActivity(shower);
                 selfCareService.updateTrackStatusForActivity(updated, user);
                 return new ResponseEntity<>(updated, HttpStatus.OK);
@@ -453,52 +493,62 @@ public class SelfCareController {
     @GetMapping("/attributes")
     public ResponseEntity<AttributeSummaryDTO> getAttributeSummary(
             @RequestParam String type,
-            @RequestParam String period) {
-        
-        // Calculate time boundary based on period
-        Instant now = Instant.now();
-        Instant after;
-        
-        switch (period.toLowerCase()) {
-            case "24h":
-                after = now.minus(24, ChronoUnit.HOURS);
-                break;
-            case "7d":
-                after = now.minus(7, ChronoUnit.DAYS);
-                break;
-            case "30d":
-                after = now.minus(30, ChronoUnit.DAYS);
-                break;
-            default:
-                after = now.minus(24, ChronoUnit.HOURS); // Default to 24h
+            @RequestParam String period,
+            Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
-        
-        AttributeSummaryDTO result;
-        
-        // Build response based on activity type
-        switch (type.toUpperCase()) {
-            case "SLEEP":
-                Map<String, Long> qualityCounts = selfCareService.getSleepQualityCounts(after);
-                Double avgDuration = selfCareService.getAverageSleepDuration(after);
-                result = new AttributeSummaryDTO(qualityCounts, avgDuration);
-                break;
-                
-            case "EAT":
-                List<AttributeSummaryDTO.MealInfo> meals = selfCareService.getMealDescriptions(after);
-                Long mealCount = (long) meals.size();
-                result = new AttributeSummaryDTO(mealCount, meals);
-                break;
-                
-            case "SHOWER":
-                Double avgLength = selfCareService.getAverageShowerLength(after);
-                result = new AttributeSummaryDTO(avgLength);
-                break;
-                
-            default:
-                return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        try {
+            User user = userService.findByUsername(authentication.getName());
+            // Calculate time boundary based on period
+            Instant now = Instant.now();
+            Instant after;
+            
+            switch (period.toLowerCase()) {
+                case "24h":
+                    after = now.minus(24, ChronoUnit.HOURS);
+                    break;
+                case "7d":
+                    after = now.minus(7, ChronoUnit.DAYS);
+                    break;
+                case "30d":
+                    after = now.minus(30, ChronoUnit.DAYS);
+                    break;
+                default:
+                    after = now.minus(24, ChronoUnit.HOURS); // Default to 24h
+            }
+            
+            AttributeSummaryDTO result;
+            
+            // Build response based on activity type
+            switch (type.toUpperCase()) {
+                case "SLEEP":
+                    Map<String, Long> qualityCounts = selfCareService.getSleepQualityCounts(user, after);
+                    Double avgDuration = selfCareService.getAverageSleepDuration(user, after);
+                    result = new AttributeSummaryDTO(qualityCounts, avgDuration);
+                    break;
+                    
+                case "EAT":
+                    List<AttributeSummaryDTO.MealInfo> meals = selfCareService.getMealDescriptions(user, after);
+                    Long mealCount = (long) meals.size();
+                    result = new AttributeSummaryDTO(mealCount, meals);
+                    break;
+                    
+                case "SHOWER":
+                    Double avgLength = selfCareService.getAverageShowerLength(user, after);
+                    result = new AttributeSummaryDTO(avgLength);
+                    break;
+                    
+                default:
+                    return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            }
+            
+            return new ResponseEntity<>(result, HttpStatus.OK);
+        } catch (Exception e) {
+            System.err.println("Error fetching attribute summary: " + e.getMessage());
+            e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        
-        return new ResponseEntity<>(result, HttpStatus.OK);
     }
     
     /**
@@ -507,18 +557,24 @@ public class SelfCareController {
      * Returns activities sorted chronologically (oldest first for timeline display).
      */
     @GetMapping("/timeline")
-    public ResponseEntity<List<Activity>> getTimeline() {
-        Instant now = Instant.now();
-        Instant twentyFourHoursAgo = now.minus(24, ChronoUnit.HOURS);
-        
-        // Get all activities and filter to last 24 hours
-        List<Activity> allActivities = selfCareService.findAllActivities();
-        List<Activity> last24Hours = allActivities.stream()
-                .filter(activity -> activity != null && activity.getTimestamp() != null && activity.getTimestamp().isAfter(twentyFourHoursAgo))
-                .sorted((a, b) -> a.getTimestamp().compareTo(b.getTimestamp())) // Oldest first
-                .collect(Collectors.toList());
-        
-        return new ResponseEntity<>(last24Hours, HttpStatus.OK);
+    public ResponseEntity<List<Activity>> getTimeline(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        try {
+            User user = userService.findByUsername(authentication.getName());
+            Instant now = Instant.now();
+            Instant twentyFourHoursAgo = now.minus(24, ChronoUnit.HOURS);
+            
+            // Get user's activities from the last 24 hours
+            List<Activity> last24Hours = selfCareService.getActivitiesForUserAfter(user, twentyFourHoursAgo);
+            
+            return new ResponseEntity<>(last24Hours, HttpStatus.OK);
+        } catch (Exception e) {
+            System.err.println("Error fetching timeline: " + e.getMessage());
+            e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     /**

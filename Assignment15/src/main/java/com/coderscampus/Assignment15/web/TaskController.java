@@ -81,7 +81,7 @@ public class TaskController {
         }
 
         boolean completed = request.getCompleted() != null && request.getCompleted();
-        TaskCompletion completion = taskService.upsertCompletion(task, completionDate, completed, request.getActivityId());
+        TaskCompletion completion = taskService.upsertCompletion(user, task, completionDate, completed, request.getActivityId());
 
         TaskCompletionResponse response = new TaskCompletionResponse(
                 completion.getId(),

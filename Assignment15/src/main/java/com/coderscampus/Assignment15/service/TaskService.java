@@ -29,7 +29,7 @@ public class TaskService {
 
     @Transactional
     public Task createTask(User user, Task task) {
-        task.setUser(user);
+        task.getUsers().add(user);
         if (task.getCompleted() == null) {
             task.setCompleted(false);
         }
@@ -37,17 +37,17 @@ public class TaskService {
     }
 
     public List<Task> getTasksForUser(User user) {
-        return taskRepository.findByUser(user);
+        return taskRepository.findByUsersContaining(user);
     }
 
     public Task getTaskForUser(Long taskId, User user) {
-        return taskRepository.findByTaskIdAndUser(taskId, user).orElse(null);
+        return taskRepository.findByTaskIdAndUsersContaining(taskId, user).orElse(null);
     }
 
     @Transactional
-    public TaskCompletion upsertCompletion(Task task, LocalDate date, boolean completed, Long activityId) {
+    public TaskCompletion upsertCompletion(User user, Task task, LocalDate date, boolean completed, Long activityId) {
         TaskCompletion existing = taskCompletionRepository
-                .findByTaskAndCompletionDate(task, date)
+                .findByTaskAndUserAndCompletionDate(task, user, date)
                 .orElse(null);
 
         Activity activity = null;
@@ -61,7 +61,7 @@ public class TaskService {
             return taskCompletionRepository.save(existing);
         }
 
-        TaskCompletion completion = new TaskCompletion(task, date, completed, activity);
+        TaskCompletion completion = new TaskCompletion(task, user, date, completed, activity);
         return taskCompletionRepository.save(completion);
     }
 
