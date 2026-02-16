@@ -56,7 +56,9 @@ public class SecurityConfig {
         .logoutSuccessUrl("/login?logout=true")
       );
 
-    if (clientRegistrationRepository.getIfAvailable() != null) {
+    ClientRegistrationRepository registrationRepository = clientRegistrationRepository.getIfAvailable();
+    if (registrationRepository != null
+        && registrationRepository.findByRegistrationId("google") != null) {
       http.oauth2Login(oauth2 -> oauth2
         .loginPage("/login")
         .defaultSuccessUrl("/track", true)
