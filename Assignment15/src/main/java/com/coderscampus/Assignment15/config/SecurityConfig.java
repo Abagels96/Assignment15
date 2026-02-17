@@ -13,6 +13,12 @@ import org.springframework.security.oauth2.client.registration.ClientRegistratio
 @EnableWebSecurity
 public class SecurityConfig {
 
+  private final com.coderscampus.Assignment15.service.CustomOAuth2UserService customOAuth2UserService;
+
+  public SecurityConfig(com.coderscampus.Assignment15.service.CustomOAuth2UserService customOAuth2UserService) {
+    this.customOAuth2UserService = customOAuth2UserService;
+  }
+
   @Bean
   SecurityFilterChain securityFilterChain(
       HttpSecurity http,
@@ -61,6 +67,8 @@ public class SecurityConfig {
         && registrationRepository.findByRegistrationId("google") != null) {
       http.oauth2Login(oauth2 -> oauth2
         .loginPage("/login")
+        .userInfoEndpoint(userInfo -> userInfo
+            .oidcUserService(customOAuth2UserService))
         .defaultSuccessUrl("/track", true)
         .failureUrl("/login?error=true")
       );

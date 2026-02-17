@@ -71,7 +71,7 @@
                         required 
                         minlength="3"
                         class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-[#FB607F] focus:border-[#FB607F] outline-none transition text-gray-900"
-                        placeholder="e.g. abigail123"
+                        placeholder="e.g. test123"
                     />
                     <p class="mt-1 text-xs text-gray-500">At least 3 characters.</p>
                 </div>
@@ -86,7 +86,6 @@
                         autocomplete="nickname"
                         required
                         class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-[#FB607F] focus:border-[#FB607F] outline-none transition text-gray-900"
-                        placeholder="e.g. Abby"
                     />
                 </div>
 
@@ -104,7 +103,6 @@
                         class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-[#FB607F] focus:border-[#FB607F] outline-none transition text-gray-900"
                         placeholder="e.g. 2"
                     />
-                    <p class="mt-1 text-xs text-gray-500">Use 0 if you don't have children.</p>
                 </div>
 
                 <!-- Children Names (optional) -->
@@ -137,16 +135,51 @@
                 <!-- Password -->
                 <div>
                     <label for="password" class="block text-sm font-semibold text-gray-700 mb-2">Password</label>
-                    <input
-                        type="password"
-                        id="password"
-                        name="password"
-                        autocomplete="new-password"
-                        required
-                        minlength="8"
-                        class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-[#FB607F] focus:border-[#FB607F] outline-none transition text-gray-900"
-                        placeholder="At least 8 characters"
-                    />
+                    <div class="relative">
+                        <input
+                            type="password"
+                            id="password"
+                            name="password"
+                            autocomplete="new-password"
+                            required
+                            minlength="8"
+                            class="w-full px-4 py-3 pr-12 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-[#FB607F] focus:border-[#FB607F] outline-none transition text-gray-900"
+                            placeholder="At least 8 characters"
+                        />
+                        <button 
+                            type="button"
+                            id="toggle-password"
+                            class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none transition"
+                            aria-label="Toggle password visibility"
+                        >
+                            <span id="toggle-password-icon">👁️</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Confirm Password -->
+                <div>
+                    <label for="confirmPassword" class="block text-sm font-semibold text-gray-700 mb-2">Confirm Password</label>
+                    <div class="relative">
+                        <input
+                            type="password"
+                            id="confirmPassword"
+                            name="confirmPassword"
+                            autocomplete="new-password"
+                            required
+                            minlength="8"
+                            class="w-full px-4 py-3 pr-12 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-[#FB607F] focus:border-[#FB607F] outline-none transition text-gray-900"
+                            placeholder="Re-enter your password"
+                        />
+                        <button 
+                            type="button"
+                            id="toggle-confirm-password"
+                            class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none transition"
+                            aria-label="Toggle confirm password visibility"
+                        >
+                            <span id="toggle-confirm-password-icon">👁️</span>
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Submit -->
@@ -172,7 +205,34 @@
             const dropdown = document.getElementById('dropdown-menu');
             dropdown.classList.toggle('hidden');
         });
+        
+        // Password toggle functionality
+        const passwordInput = document.getElementById('password');
+        const togglePasswordBtn = document.getElementById('toggle-password');
+        const togglePasswordIcon = document.getElementById('toggle-password-icon');
+        
+        if (togglePasswordBtn && passwordInput) {
+            togglePasswordBtn.addEventListener('click', function() {
+                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordInput.setAttribute('type', type);
+                togglePasswordIcon.textContent = type === 'password' ? '👁️' : '🙈';
+            });
+        }
 
+        // Confirm Password toggle functionality
+        const confirmPasswordInput = document.getElementById('confirmPassword');
+        const toggleConfirmPasswordBtn = document.getElementById('toggle-confirm-password');
+        const toggleConfirmPasswordIcon = document.getElementById('toggle-confirm-password-icon');
+        
+        if (toggleConfirmPasswordBtn && confirmPasswordInput) {
+            toggleConfirmPasswordBtn.addEventListener('click', function() {
+                const type = confirmPasswordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                confirmPasswordInput.setAttribute('type', type);
+                toggleConfirmPasswordIcon.textContent = type === 'password' ? '👁️' : '🙈';
+            });
+        }
+
+        // Close dropdown when clicking outside
         document.addEventListener('click', function(e) {
             const dropdown = document.getElementById('dropdown-menu');
             const toggle = document.getElementById('menu-toggle');

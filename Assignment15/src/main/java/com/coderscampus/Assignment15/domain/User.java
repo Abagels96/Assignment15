@@ -55,18 +55,26 @@ public class User {
 	private String username;
 
 
-		@Column(nullable = false)
+	@Column(unique = true) // not nullable - can be set from OAuth email or username
+	private String email;
+	
+	@Column
+	private String oauthProvider; 
+	@Column
+	private String oauthId; 
+
+		@Column(nullable = true)
 	private String displayName;
 
 		// Store a hashed password (BCrypt), not plaintext
-		@Column(nullable = false)
+		@Column(nullable = true)
 	private String password;
 
-	@Column(nullable = false)
+	@Column(nullable = true)
 	private Integer numChildren;
 	@Column
 	private String childNames;
-	@Column(nullable = false)
+	@Column(nullable = true)
 	private String childAges;
 
     @ManyToMany(mappedBy = "users")
@@ -134,6 +142,29 @@ public class User {
         this.activities = activities;
     }
 
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getOauthProvider() {
+        return oauthProvider;
+    }
+
+    public void setOauthProvider(String oauthProvider) {
+        this.oauthProvider = oauthProvider;
+    }
+
+    public String getOauthId() {
+        return oauthId;
+    }
+
+    public void setOauthId(String oauthId) {
+        this.oauthId = oauthId;
+    }
 
 		
 	    

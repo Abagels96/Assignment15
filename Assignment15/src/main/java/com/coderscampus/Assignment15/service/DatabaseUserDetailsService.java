@@ -25,13 +25,24 @@ public class DatabaseUserDetailsService implements UserDetailsService {
     User user = userRepository.findByUsernameIgnoreCase(username)
         .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
 
+    // OAuth users don't have passwords - they authenticate via OAuth2
+    // If password is null, use a placeholder that will never match
+    // This prevents form login for OAuth-only users
+    String password = user.getPassword();
+    if (password == null || password.isBlank()) {
+      // Use a BCrypt hash that will never match any input
+      // This effectively disables password-based login for OAuth users
+      password = "$2a$10$NONE.OAUTH.USER.PASSWORD.HASH.NEVER.MATCHES";
+    }
+
     return new org.springframework.security.core.userdetails.User(
         user.getUsername(),
-        user.getPassword(), // this should already be BCrypt-hashed from your register flow
+        password, // this should already be BCrypt-hashed from your register flow
         Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"))
     );
   }
 }
+
 
 
 
