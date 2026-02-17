@@ -65,7 +65,9 @@ public class UserService {
 		if (trimmed == null) {
 			throw new IllegalArgumentException("Username is required.");
 		}
+		// Try username first, then fall back to email lookup (for OAuth users)
 		return userRepository.findByUsernameIgnoreCase(trimmed)
+				.or(() -> userRepository.findByEmail(trimmed))
 				.orElseThrow(() -> new IllegalStateException("User not found."));
 	}
 
