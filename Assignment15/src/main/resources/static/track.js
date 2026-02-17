@@ -603,7 +603,6 @@ async function submitShower() {
                             rating === 'FIVE' ? '5' : rating;
         
         // Show success message with rating and length
-        alert(`Shower recorded!\nRating: ${ratingNumber}/5\nLength: ${lengthInMinutes} minutes`);
         
         // Hide the form and reload history
         hideShowerForm();
