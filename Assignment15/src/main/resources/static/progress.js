@@ -433,7 +433,10 @@ function renderTrackProgress(tracks, date) {
     // Create header
     const header = document.createElement('div');
     header.className = 'mb-6';
-    const dateObj = new Date(date);
+    // Parse date parts directly to avoid UTC-to-local timezone shift
+    // (new Date("YYYY-MM-DD") is parsed as UTC midnight, which rolls back a day in US timezones)
+    const [year, month, day] = date.split('-').map(Number);
+    const dateObj = new Date(year, month - 1, day); // month is 0-indexed
     const formattedDate = dateObj.toLocaleDateString('en-US', {
         weekday: 'long',
         year: 'numeric',
