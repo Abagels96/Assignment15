@@ -71,7 +71,9 @@ public class SecurityConfig {
         && registrationRepository.findByRegistrationId("google") != null) {
       ClientRegistration googleRegistration = registrationRepository.findByRegistrationId("google");
       logger.info("Google OAuth2 client registration found — enabling OAuth2 login");
-      logger.info("OAuth2 Redirect URI: {}", googleRegistration.getRedirectUri());
+      String redirectUri = googleRegistration.getRedirectUri();
+      logger.info("OAuth2 Redirect URI: {} {}", redirectUri, 
+          redirectUri.contains("{") ? "(template - will be resolved at runtime)" : "(explicitly configured)");
       logger.info("OAuth2 Client ID: {}", googleRegistration.getClientId() != null ? 
           googleRegistration.getClientId().substring(0, Math.min(20, googleRegistration.getClientId().length())) + "..." : "null");
       logger.info("OAuth2 Scopes: {}", googleRegistration.getScopes());
