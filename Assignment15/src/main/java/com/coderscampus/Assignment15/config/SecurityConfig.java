@@ -10,6 +10,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
+import org.springframework.security.oauth2.client.registration.ClientRegistration;
 
 @Configuration
 @EnableWebSecurity
@@ -68,7 +69,12 @@ public class SecurityConfig {
     ClientRegistrationRepository registrationRepository = clientRegistrationRepository.getIfAvailable();
     if (registrationRepository != null
         && registrationRepository.findByRegistrationId("google") != null) {
+      ClientRegistration googleRegistration = registrationRepository.findByRegistrationId("google");
       logger.info("Google OAuth2 client registration found — enabling OAuth2 login");
+      logger.info("OAuth2 Redirect URI: {}", googleRegistration.getRedirectUri());
+      logger.info("OAuth2 Client ID: {}", googleRegistration.getClientId() != null ? 
+          googleRegistration.getClientId().substring(0, Math.min(20, googleRegistration.getClientId().length())) + "..." : "null");
+      logger.info("OAuth2 Scopes: {}", googleRegistration.getScopes());
       http.oauth2Login(oauth2 -> oauth2
         .loginPage("/login")
         .userInfoEndpoint(userInfo -> userInfo
