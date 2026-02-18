@@ -9,6 +9,8 @@ import com.coderscampus.Assignment15.domain.User;
 public interface UserRepository extends JpaRepository<User, Long> {
 	Optional<User> findByUsernameIgnoreCase(String username);
 	boolean existsByUsernameIgnoreCase(String username);
+	Optional<User> findByEmail(String email);
+	Optional<User> findByOauthProviderAndOauthId(String oauthProvider, String oauthId);
 }
 
 

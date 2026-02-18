@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,51 +10,74 @@
     <!-- Use Inter font -->
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
-        html, body {
+
+        html,
+        body {
             height: 100%;
         }
+
         body {
-            font-family: 'Inter', sans-serif;
+            background-color: body;
             background: linear-gradient(135deg, #FF7F7F 0%, #FB607F 100%);
+            font-family: 'Inter', sans-serif;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
         }
     </style>
 </head>
-<body class="min-h-screen flex flex-col p-4 overflow-y-auto overflow-x-hidden">
-    <div class="w-full bg-white/95 backdrop-blur-sm shadow-2xl rounded-3xl p-6 md:p-8 my-4 flex flex-col min-h-[calc(100vh-2rem)]">
+
+<body class="min-h-screen flex flex-col p-4 overflow-y-auto overflow-x-hidden" style="background: url('images/seamless-pattern-with-pink-roses-vector-illustration-EYGXC5-1918105498.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: repeat;
+            ">
+
+    <div
+        class="w-full bg-white/55 backdrop-blur-sm shadow-2xl rounded-3xl p-6 md:p-8 my-4 flex flex-col min-h-[calc(100vh-2rem)]">
         <!-- Header with Dropdown Menu -->
         <header class="relative mb-8 flex-shrink-0">
             <div class="flex items-center justify-between mb-6">
-                <h1 class="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-[#E4717A] to-[#FB607F] bg-clip-text text-transparent">Login</h1>
+                <h1
+                    class="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-[#E4717A] to-[#FB607F] bg-clip-text text-transparent">
+                    Login</h1>
                 <!-- Dropdown Menu -->
                 <div class="relative">
-                    <button id="menu-toggle" class="text-3xl hover:scale-110 transition-transform focus:outline-none" title="Menu">
+                    <button id="menu-toggle" class="text-3xl hover:scale-110 transition-transform focus:outline-none"
+                        title="Menu">
                         ☰
                     </button>
                     <!-- Dropdown Content -->
-                    <div id="dropdown-menu" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-2xl border-2 border-[#FFE8ED] py-2 z-50">
-                        <a href="/track" class="block px-4 py-3 hover:bg-[#FFF5F7] transition flex items-center space-x-3">
+                    <div id="dropdown-menu"
+                        class="hidden absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-2xl border-2 border-[#FFE8ED] py-2 z-50">
+                        <a href="/track"
+                            class="block px-4 py-3 hover:bg-[#FFF5F7] transition flex items-center space-x-3">
                             <span class="text-2xl">📋</span>
                             <span class="text-gray-700 font-medium">Tracker</span>
                         </a>
-                        <a href="/progress" class="block px-4 py-3 hover:bg-[#FFF5F7] transition flex items-center space-x-3">
+                        <a href="/progress"
+                            class="block px-4 py-3 hover:bg-[#FFF5F7] transition flex items-center space-x-3">
                             <span class="text-2xl">📊</span>
                             <span class="text-gray-700 font-medium">Progress</span>
                         </a>
-                        <a href="/profile" class="block px-4 py-3 hover:bg-[#FFF5F7] transition flex items-center space-x-3">
+                        <a href="/profile"
+                            class="block px-4 py-3 hover:bg-[#FFF5F7] transition flex items-center space-x-3">
                             <span class="text-2xl">👤</span>
                             <span class="text-gray-700 font-medium">Profile</span>
                         </a>
-                        <a href="/register" class="block px-4 py-3 hover:bg-[#FFF5F7] transition flex items-center space-x-3">
+                        <a href="/register"
+                            class="block px-4 py-3 hover:bg-[#FFF5F7] transition flex items-center space-x-3">
                             <span class="text-2xl">✨</span>
                             <span class="text-gray-700 font-medium">Register</span>
                         </a>
-                        <a href="#" class="block px-4 py-3 hover:bg-[#FFF5F7] transition flex items-center space-x-3 opacity-75" title="Coming Soon">
+                        <a href="#"
+                            class="block px-4 py-3 hover:bg-[#FFF5F7] transition flex items-center space-x-3 opacity-75"
+                            title="Coming Soon">
                             <span class="text-2xl">⏳</span>
                             <span class="text-gray-700 font-medium">In Progress</span>
                         </a>
-                        <a href="#" class="block px-4 py-3 hover:bg-[#FFF5F7] transition flex items-center space-x-3 opacity-75" title="Coming Soon">
+                        <a href="#"
+                            class="block px-4 py-3 hover:bg-[#FFF5F7] transition flex items-center space-x-3 opacity-75"
+                            title="Coming Soon">
                             <span class="text-2xl">👶</span>
                             <span class="text-gray-700 font-medium">Baby Tracker</span>
                         </a>
@@ -65,65 +89,58 @@
 
         <!-- Login Form -->
         <main class="flex-1 flex items-center justify-center">
-            <form  method="post" action="/login" id="login-form" class="w-full max-w-md space-y-6" >
-            
-            <!-- Username Field -->
-            <div>
-                <label for="username" class="block text-sm font-semibold text-gray-700 mb-2">
-                    Username
-                </label>
-                <input 
-                    type="text" 
-                    id="username" 
-                    name="username" 
-                    required
-                    class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-[#FB607F] focus:border-[#FB607F] outline-none transition text-gray-900"
-                    placeholder="Enter your username"
-                />
-            </div>
+            <form method="post" action="/login" id="login-form" class="w-full max-w-md space-y-6">
 
-            <!-- Password Field -->
-            <div>
-                <label for="password" class="block text-sm font-semibold text-gray-700 mb-2">
-                    Password
-                </label>
-                <div class="relative">
-                    <input 
-                        type="password" 
-                        id="password" 
-                        name="password" 
-                        required
-                        class="w-full px-4 py-3 pr-12 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-[#FB607F] focus:border-[#FB607F] outline-none transition text-gray-900"
-                        placeholder="Enter your password"
-                    />
-                    <button 
-                        type="button"
-                        id="toggle-password"
-                        class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none transition"
-                        aria-label="Toggle password visibility"
-                    >
-                        <span id="toggle-password-icon">👁️</span>
-                    </button>
+                <!-- Username Field -->
+                <div>
+                    <label for="username" class="block text-sm font-semibold text-gray-700 mb-2">
+                        Username
+                    </label>
+                    <input type="text" id="username" name="username" required
+                        class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-[#FB607F] focus:border-[#FB607F] outline-none transition text-gray-900"
+                        placeholder="Enter your username" />
                 </div>
-            </div>
 
-            <!-- Login Error Message -->
-            <div id="login-error" class="hidden rounded-xl border-2 border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-                Invalid username or password. Please try again.
-            </div>
+                <!-- Password Field -->
+                <div>
+                    <label for="password" class="block text-sm font-semibold text-gray-700 mb-2">
+                        Password
+                    </label>
+                    <div class="relative">
+                        <input type="password" id="password" name="password" required
+                            class="w-full px-4 py-3 pr-12 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-[#FB607F] focus:border-[#FB607F] outline-none transition text-gray-900"
+                            placeholder="Enter your password" />
+                        <button type="button" id="toggle-password"
+                            class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none transition"
+                            aria-label="Toggle password visibility">
+                            <span id="toggle-password-icon">👁️</span>
+                        </button>
+                    </div>
+                </div>
 
-            <!-- Login Button -->
-            <button 
-                type="submit"
-                class="w-full bg-[#FB607F] hover:bg-[#E4717A] text-white font-bold py-3 px-4 rounded-xl transition transform hover:scale-[1.03] active:scale-[1.0] shadow-xl"
-            >
-                Sign In
-            </button>
-            
-            <p class="text-sm text-gray-600 text-center">
-                New here?
-                <a href="/register" class="text-[#E4717A] hover:text-[#D36C6C] hover:underline font-semibold">Create an account</a>
-            </p>
+                <!-- Login Error Message -->
+                <div id="login-error"
+                    class="hidden rounded-xl border-2 border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                    Invalid username or password. Please try again.
+                </div>
+
+                <!-- Login Button -->
+
+                <a href="/oauth2/authorization/google"
+                    class="w-full flex items-center justify-center gap-3 border-2 border-gray-200 rounded-xl py-3 px-4 bg-white hover:bg-gray-50 transition shadow-sm">
+                    <span class="text-lg">🔒</span>
+                    <span class="font-semibold text-gray-700">Continue with Google</span>
+                </a>
+                <button type="submit"
+                    class="w-full bg-[#FB607F] hover:bg-[#E4717A] text-white font-bold py-3 px-4 rounded-xl transition transform hover:scale-[1.03] active:scale-[1.0] shadow-xl">
+                    Sign In
+                </button>
+
+                <p class="text-sm text-gray-600 text-center">
+                    New here?
+                    <a href="/register" class="text-[#E4717A] hover:text-[#D36C6C] hover:underline font-semibold">Create
+                        an account</a>
+                </p>
             </form>
         </main>
     </div>
@@ -131,14 +148,14 @@
     <!-- Script for Dropdown Toggle -->
     <script>
         // Toggle dropdown menu
-        document.getElementById('menu-toggle').addEventListener('click', function(e) {
+        document.getElementById('menu-toggle').addEventListener('click', function (e) {
             e.stopPropagation();
             const dropdown = document.getElementById('dropdown-menu');
             dropdown.classList.toggle('hidden');
         });
 
         // Close dropdown when clicking outside
-        document.addEventListener('click', function(e) {
+        document.addEventListener('click', function (e) {
             const dropdown = document.getElementById('dropdown-menu');
             const toggle = document.getElementById('menu-toggle');
             if (!dropdown.contains(e.target) && !toggle.contains(e.target)) {
@@ -150,9 +167,9 @@
         const passwordInput = document.getElementById('password');
         const togglePasswordBtn = document.getElementById('toggle-password');
         const togglePasswordIcon = document.getElementById('toggle-password-icon');
-        
+
         if (togglePasswordBtn && passwordInput) {
-            togglePasswordBtn.addEventListener('click', function() {
+            togglePasswordBtn.addEventListener('click', function () {
                 const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
                 passwordInput.setAttribute('type', type);
                 togglePasswordIcon.textContent = type === 'password' ? '👁️' : '🙈';
@@ -166,4 +183,5 @@
     <!-- Load Login JavaScript if exists -->
     <script src="/login.js"></script>
 </body>
+
 </html>
