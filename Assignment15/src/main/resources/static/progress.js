@@ -172,7 +172,7 @@ async function loadAttributeData() {
     try {
         const url = `${API_BASE_URL}/attributes?type=${type}&period=${period}`;
         console.log('Fetching from:', url);
-        const response = await fetch(url);
+        const response = await fetch(url, { credentials: 'include' });
         console.log('Response status:', response.status);
         
         if (!response.ok) {
@@ -384,7 +384,11 @@ async function loadTrackProgress() {
     let date = dateInput ? dateInput.value : '';
     if (!date) {
         const today = new Date();
-        date = today.toISOString().split('T')[0];
+        // Use local date (not UTC) so "today" matches the user's actual day
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        date = `${year}-${month}-${day}`;
         if (dateInput) {
             dateInput.value = date;
         }
