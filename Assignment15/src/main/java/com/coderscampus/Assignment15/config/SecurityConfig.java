@@ -1,5 +1,7 @@
 package com.coderscampus.Assignment15.config;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,6 +15,7 @@ import org.springframework.security.oauth2.client.registration.ClientRegistratio
 @EnableWebSecurity
 public class SecurityConfig {
 
+  private static final Logger logger = LoggerFactory.getLogger(SecurityConfig.class);
   private final com.coderscampus.Assignment15.service.CustomOAuth2UserService customOAuth2UserService;
 
   public SecurityConfig(com.coderscampus.Assignment15.service.CustomOAuth2UserService customOAuth2UserService) {
@@ -65,6 +68,7 @@ public class SecurityConfig {
     ClientRegistrationRepository registrationRepository = clientRegistrationRepository.getIfAvailable();
     if (registrationRepository != null
         && registrationRepository.findByRegistrationId("google") != null) {
+      logger.info("Google OAuth2 client registration found — enabling OAuth2 login");
       http.oauth2Login(oauth2 -> oauth2
         .loginPage("/login")
         .userInfoEndpoint(userInfo -> userInfo
@@ -72,6 +76,9 @@ public class SecurityConfig {
         .defaultSuccessUrl("/track", true)
         .failureUrl("/login?error=true")
       );
+    } else {
+      logger.warn("Google OAuth2 client registration NOT found — OAuth2 login will be disabled. "
+          + "Ensure GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET env vars are set.");
     }
 
     return http.build();
