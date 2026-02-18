@@ -2,6 +2,7 @@ package com.coderscampus.Assignment15.domain;
 
 import jakarta.persistence.*;
 import java.time.LocalDate;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name = "track")
@@ -13,6 +14,7 @@ public class Track {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
+    @JsonIgnore
     private User user;
 
     @OneToOne(fetch = FetchType.LAZY)
